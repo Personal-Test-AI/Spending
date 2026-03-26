@@ -814,15 +814,12 @@ function getWeekStart() {
   return monday;
 }
 
-// Fixed end time calculated once at startup
-const WEEK_END_TIME = (function() {
-  const t = new Date();
-  t.setMinutes(t.getMinutes() + 1); // TEST: alert appears in 1 min
-  return t;
-})();
-
 function getWeekEnd() {
-  return WEEK_END_TIME;
+  const monday = getWeekStart();
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(22, 30, 0, 0);
+  return sunday;
 }
 
 function fmtDate(d) {
