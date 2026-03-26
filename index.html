@@ -587,11 +587,12 @@ function addExpense(section) {
     return;
   }
 
-  const newItem = { id: Date.now(), sectiune: section, descriere: desc, suma: amount, categorie: category, data: date };
-  data[section].unshift(newItem);
+  const newId = Date.now();
+  const localItem = { id: newId, desc, amount: parseFloat(amount), category, date };
+  data[section].unshift(localItem);
   renderSection(section);
   renderTabTotals();
-  sb.from('cheltuieli').insert([{ id: newItem.id, sectiune: section, descriere: desc, suma: parseFloat(amount), categorie: category, data: date }])
+  sb.from('cheltuieli').insert([{ id: newId, sectiune: section, descriere: desc, suma: parseFloat(amount), categorie: category, data: date }])
     .then(({ error }) => { if (error) console.error('Supabase insert error:', error); });
 
   document.getElementById('desc-' + section).value = '';
