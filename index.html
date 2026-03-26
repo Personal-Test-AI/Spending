@@ -322,19 +322,6 @@
 <div class="container">
 
 
-  <!-- WEEK BANNER -->
-  <div class="week-banner" id="week-banner">
-    <div class="week-left">
-      <div class="week-icon">📅</div>
-      <div class="week-info">
-        <div class="week-label">Săptămâna activă</div>
-        <div class="week-dates" id="week-dates">—</div>
-        <div class="week-day" id="week-day">—</div>
-      </div>
-    </div>
-    <button class="btn-close-week" onclick="confirmCloseWeek()">🔒 Închide</button>
-  </div>
-
   <!-- TABS -->
   <div class="tabs">
     <button class="tab-btn active-mario" id="tab-btn-mario" onclick="switchTab('mario')">
@@ -621,8 +608,21 @@
 
   <!-- PANEL ISTORIC -->
   <div class="panel" id="panel-istoric">
+    <!-- Săptămâna activă -->
+    <div class="week-banner" id="week-banner">
+      <div class="week-left">
+        <div class="week-icon">📅</div>
+        <div class="week-info">
+          <div class="week-label">Săptămâna activă</div>
+          <div class="week-dates" id="week-dates">—</div>
+          <div class="week-day" id="week-day">—</div>
+        </div>
+      </div>
+      <button class="btn-close-week" onclick="confirmCloseWeek()">🔒 Închide</button>
+    </div>
+    <!-- Săptămâni arhivate -->
     <div class="card">
-      <h2>📅 Istoric Săptămâni</h2>
+      <h2>📁 Săptămâni arhivate</h2>
       <div id="istoric-list"><div class="empty-state">Nu există săptămâni arhivate încă</div></div>
     </div>
   </div>
