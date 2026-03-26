@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0f13">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Spending 🏠</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #18181f;
+    --surface2: #22222c;
+    --border: #2e2e3a;
+    --text: #f0f0f5;
+    --text-muted: #7a7a90;
+    --costina: #fa6c9a;
+    --mario: #6cf0c2;
+    --together: #facc6c;
+    --lista: #60c5fa;
+    --peretu: #b8fa6c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+
+  header { text-align: center; margin-bottom: 28px; }
+
+  header h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(26px, 6vw, 44px);
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--mario), var(--costina), var(--together));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  header p { color: var(--text-muted); margin-top: 6px; font-size: 14px; }
+
+  .container { max-width: 860px; margin: 0 auto; }
+
+  /* TABS */
+  .tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .tab-btn {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 14px 10px;
+    text-align: center;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .tab-btn .tab-icon { font-size: 22px; }
+  .tab-btn .tab-name { font-size: 14px; }
+  .tab-btn .tab-total { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+
+  .tab-btn.active-mario    { border-color: var(--mario);    color: var(--mario);    background: rgba(108,240,194,0.07); }
+  .tab-btn.active-costina  { border-color: var(--costina);  color: var(--costina);  background: rgba(250,108,154,0.07); }
+  .tab-btn.active-together { border-color: var(--together); color: var(--together); background: rgba(250,204,108,0.07); }
+  .tab-btn.active-mario    .tab-total { color: var(--mario); }
+  .tab-btn.active-costina  .tab-total { color: var(--costina); }
+  .tab-btn.active-together .tab-total { color: var(--together); }
+  .tab-btn.active-lista    { border-color: var(--lista);    color: var(--lista);    background: rgba(96,197,250,0.07); }
+  .tab-btn.active-lista    .tab-total { color: var(--lista); }
+  .tab-btn.active-peretu   { border-color: var(--peretu);   color: var(--peretu);   background: rgba(184,250,108,0.07); }
+  .tab-btn.active-peretu   .tab-total { color: var(--peretu); }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: grid; gap: 20px; }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+  }
+
+  .card h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+  }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grid .full { grid-column: 1 / -1; }
+
+  label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; font-weight: 500; }
+
+  input, select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, select:focus { border-color: #7c6cfa; }
+  select option { background: var(--surface2); }
+
+  .btn-add {
+    width: 100%; border: none; border-radius: 12px;
+    color: #0a0a0d;
+    font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700;
+    padding: 13px; cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s; margin-top: 4px;
+  }
+  .btn-add:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-add:active { transform: translateY(0); }
+  .btn-mario    { background: var(--mario); }
+  .btn-costina  { background: var(--costina); }
+  .btn-together { background: var(--together); }
+
+  /* VISUAL ROW */
+  .visual-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  canvas { display: block; }
+
+  .chart-wrap {
+    position: relative;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+  }
+
+  .chart-total { position: absolute; text-align: center; pointer-events: none; }
+  .chart-total span { display: block; font-family: 'Inter', sans-serif; }
+  .chart-total .lbl { font-size: 11px; color: var(--text-muted); }
+  .chart-total .val { font-size: 18px; font-weight: 800; color: var(--text); }
+
+  /* CATEGORIES */
+  .cat-list { display: flex; flex-direction: column; gap: 10px; }
+  .cat-row { display: flex; align-items: center; gap: 10px; }
+  .cat-icon {
+    font-size: 18px; width: 34px; height: 34px;
+    border-radius: 8px; background: var(--surface2);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .cat-info { flex: 1; }
+  .cat-info .cat-name { font-size: 13px; font-weight: 500; }
+  .cat-info .cat-bar-wrap { height: 5px; background: var(--border); border-radius: 999px; margin-top: 4px; }
+  .cat-info .cat-bar { height: 5px; border-radius: 999px; transition: width 0.4s ease; }
+  .cat-amount { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; white-space: nowrap; }
+
+  /* TRANSACTIONS */
+  .txn-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .txn-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface2); border-radius: 12px;
+    padding: 12px 14px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  .txn-icon {
+    font-size: 20px; width: 38px; height: 38px;
+    background: var(--surface); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+
+  .txn-info { flex: 1; min-width: 0; }
+  .txn-info .txn-desc { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .txn-info .txn-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .txn-right { text-align: right; flex-shrink: 0; }
+  .txn-amount { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 15px; }
+
+  .txn-badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 7px; border-radius: 20px; margin-top: 3px;
+  }
+  .badge-mario    { background: rgba(108,240,194,0.15); color: var(--mario); }
+  .badge-costina  { background: rgba(250,108,154,0.15); color: var(--costina); }
+  .badge-together { background: rgba(250,204,108,0.15); color: var(--together); }
+
+  .btn-del {
+    background: none; border: none; color: var(--text-muted);
+    cursor: pointer; font-size: 16px; padding: 4px;
+    border-radius: 6px; transition: color 0.2s; flex-shrink: 0;
+  }
+  .btn-del:hover { color: #fa6c9a; }
+
+  .empty-state { text-align: center; color: var(--text-muted); font-size: 14px; padding: 28px 0; }
+
+  @media (max-width: 600px) {
+    .visual-row { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid .full { grid-column: 1; }
+    .tabs { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .tab-btn { font-size: 11px; padding: 8px 4px; }
+    .tab-btn .tab-icon { font-size: 16px; }
+    .tab-btn .tab-name { font-size: 11px; }
+    .tab-btn .tab-total { font-size: 10px; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<header>
+  <h1>Spending</h1>
+</header>
+
+<div class="container">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active-mario" id="tab-btn-mario" onclick="switchTab('mario')">
+      <span class="tab-icon">🧔</span>
+      <span class="tab-name">Mario</span>
+      <span class="tab-total" id="tab-total-mario">0,00 lei</span>
+    </button>
+    <button class="tab-btn" id="tab-btn-costina" onclick="switchTab('costina')">
+      <span class="tab-icon">👩</span>
+      <span class="tab-name">Costina</span>
+      <span class="tab-total" id="tab-total-costina">0,00 lei</span>
+    </button>
+    <button class="tab-btn" id="tab-btn-together" onclick="switchTab('together')">
+      <span class="tab-icon">🏠</span>
+      <span class="tab-name">Împreună</span>
+      <span class="tab-total" id="tab-total-together">0,00 lei</span>
+    </button>
+    <button class="tab-btn" id="tab-btn-lista" onclick="switchTab('lista')">
+      <span class="tab-icon">🛒</span>
+      <span class="tab-name">Cumpărături</span>
+      <span class="tab-total" id="tab-total-lista"> </span>
+    </button>
+    <button class="tab-btn" id="tab-btn-peretu" onclick="switchTab('peretu')">
+      <span class="tab-icon">🚗</span>
+      <span class="tab-name">Peretu</span>
+      <span class="tab-total" id="tab-total-peretu"> </span>
+    </button>
+  </div>
+
+  <!-- PANEL MARIO -->
+  <div class="panel active" id="panel-mario">
+    <div class="card">
+      <h2>🧔 Cheltuieli Mario</h2>
+      <div class="form-grid">
+        <div class="full">
+          <label>Descriere</label>
+          <input type="text" id="desc-mario" placeholder="Ex: Abonament, combustibil..."/>
+        </div>
+        <div>
+          <label>Sumă (lei)</label>
+          <input type="number" id="amount-mario" placeholder="0.00" min="0" step="0.01"/>
+        </div>
+        <div>
+          <label>Categorie</label>
+          <select id="category-mario">
+            <option value="comida">🛒 Cumpărături Casă</option>
+            <option value="fastfood">🍔 FastFood</option>
+            <option value="tigari">🚬 Heets</option>
+            <option value="suministros">💡 Utilități</option>
+            <option value="transporte">🚌 Transport</option>
+            <option value="salidas">🍻 Ieșiri</option>
+            <option value="otros">📦 Altele</option>
+          </select>
+        </div>
+        <div>
+          <label>Data</label>
+          <input type="date" id="date-mario"/>
+        </div>
+        <div class="full">
+          <button class="btn-add btn-mario" onclick="addExpense('mario')">+ Adaugă cheltuială Mario</button>
+        </div>
+      </div>
+    </div>
+    <div class="visual-row">
+      <div class="card">
+        <h2>Rezumat Mario</h2>
+        <div class="chart-wrap" style="height:190px;">
+          <canvas id="pie-mario" width="190" height="190"></canvas>
+          <div class="chart-total">
+            <span class="lbl">Total</span>
+            <span class="val" id="pie-total-mario">0,00 lei</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Pe categorie</h2>
+        <div class="cat-list" id="cats-mario"><div class="empty-state">Nicio cheltuială încă</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Istoric Mario</h2>
+      <div class="txn-list" id="txns-mario"><div class="empty-state">Nu există cheltuieli înregistrate 👀</div></div>
+    </div>
+  </div>
+
+  <!-- PANEL COSTINA -->
+  <div class="panel" id="panel-costina">
+    <div class="card">
+      <h2>👩 Cheltuieli Costina</h2>
+      <div class="form-grid">
+        <div class="full">
+          <label>Descriere</label>
+          <input type="text" id="desc-costina" placeholder="Ex: Cumpărături, cosmetice..."/>
+        </div>
+        <div>
+          <label>Sumă (lei)</label>
+          <input type="number" id="amount-costina" placeholder="0.00" min="0" step="0.01"/>
+        </div>
+        <div>
+          <label>Categorie</label>
+          <select id="category-costina">
+            <option value="comida">🛒 Cumpărături Casă</option>
+            <option value="fastfood">🍔 FastFood</option>
+            <option value="tigari">🚬 Heets</option>
+            <option value="suministros">💡 Utilități</option>
+            <option value="transporte">🚌 Transport</option>
+            <option value="salidas">🍻 Ieșiri</option>
+            <option value="otros">📦 Altele</option>
+          </select>
+        </div>
+        <div>
+          <label>Data</label>
+          <input type="date" id="date-costina"/>
+        </div>
+        <div class="full">
+          <button class="btn-add btn-costina" onclick="addExpense('costina')">+ Adaugă cheltuială Costina</button>
+        </div>
+      </div>
+    </div>
+    <div class="visual-row">
+      <div class="card">
+        <h2>Rezumat Costina</h2>
+        <div class="chart-wrap" style="height:190px;">
+          <canvas id="pie-costina" width="190" height="190"></canvas>
+          <div class="chart-total">
+            <span class="lbl">Total</span>
+            <span class="val" id="pie-total-costina">0,00 lei</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Pe categorie</h2>
+        <div class="cat-list" id="cats-costina"><div class="empty-state">Nicio cheltuială încă</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Istoric Costina</h2>
+      <div class="txn-list" id="txns-costina"><div class="empty-state">Nu există cheltuieli înregistrate 👀</div></div>
+    </div>
+  </div>
+
+  <!-- PANEL ÎMPREUNĂ -->
+  <div class="panel" id="panel-together">
+    <div class="card">
+      <h2>🏠 Cheltuieli Comune</h2>
+      <div class="form-grid">
+        <div class="full">
+          <label>Descriere</label>
+          <input type="text" id="desc-together" placeholder="Ex: Chirie, facturi, curățenie..."/>
+        </div>
+        <div>
+          <label>Sumă (lei)</label>
+          <input type="number" id="amount-together" placeholder="0.00" min="0" step="0.01"/>
+        </div>
+        <div>
+          <label>Categorie</label>
+          <select id="category-together">
+            <option value="suministros">💡 Utilități</option>
+            <option value="comida">🛒 Cumpărături Casă</option>
+            <option value="fastfood">🍔 FastFood</option>
+            <option value="tigari">🚬 Heets</option>
+            <option value="salidas">🍻 Ieșiri</option>
+            <option value="transporte">🚌 Transport</option>
+            <option value="otros">📦 Altele</option>
+          </select>
+        </div>
+        <div>
+          <label>Data</label>
+          <input type="date" id="date-together"/>
+        </div>
+        <div class="full">
+          <button class="btn-add btn-together" onclick="addExpense('together')">+ Adaugă cheltuială comună</button>
+        </div>
+      </div>
+    </div>
+    <div class="visual-row">
+      <div class="card">
+        <h2>Rezumat comun</h2>
+        <div class="chart-wrap" style="height:190px;">
+          <canvas id="pie-together" width="190" height="190"></canvas>
+          <div class="chart-total">
+            <span class="lbl">Total</span>
+            <span class="val" id="pie-total-together">0,00 lei</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Pe categorie</h2>
+        <div class="cat-list" id="cats-together"><div class="empty-state">Nicio cheltuială încă</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Istoric comun</h2>
+      <div class="txn-list" id="txns-together"><div class="empty-state">Nu există cheltuieli înregistrate 👀</div></div>
+    </div>
+  </div>
+
+
+  <!-- PANEL LISTĂ CUMPĂRĂTURI -->
+  <div class="panel" id="panel-lista">
+    <div class="card">
+      <h2>🛒 Listă Cumpărături</h2>
+      <div class="form-grid">
+        <div class="full">
+          <label>Produs</label>
+          <input type="text" id="desc-lista" placeholder="Ex: Lapte, pâine, detergent..."/>
+        </div>
+        <div>
+          <label>Cantitate</label>
+          <input type="text" id="qty-lista" placeholder="Ex: 2 buc, 1 kg..."/>
+        </div>
+        <div>
+          <label>Cine cumpără</label>
+          <select id="who-lista">
+            <option value="mario">🧔 Mario</option>
+            <option value="costina">👩 Costina</option>
+            <option value="oricare">👥 Oricare</option>
+          </select>
+        </div>
+        <div class="full">
+          <button class="btn-add" style="background:var(--lista);color:#0a0a0d;" onclick="addListItem()">+ Adaugă în listă</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Lista activă <span id="lista-count" style="color:var(--lista);font-size:13px;"></span></h2>
+      <div id="lista-items"><div class="empty-state">Lista e goală 🛒</div></div>
+    </div>
+    <div class="card">
+      <h2>✅ Cumpărate</h2>
+      <div id="lista-done"><div class="empty-state">Nimic cumpărat încă</div></div>
+    </div>
+  </div>
+
+  <!-- PANEL PERETU -->
+  <div class="panel" id="panel-peretu">
+    <div class="card">
+      <h2>🚗 Peretu ↔ București</h2>
+      <div class="dir-btns">
+        <button class="btn-add dir-btn" style="background:var(--peretu);color:#0a0a0d;margin:0;" onclick="setDirection('buc-per')">📦 București → Peretu</button>
+        <button class="btn-add dir-btn" style="background:#fa9c6c;color:#0a0a0d;margin:0;" onclick="setDirection('per-buc')">🏙️ Peretu → București</button>
+      </div>
+      <div id="peretu-direction-label" style="text-align:center;font-size:13px;color:var(--text-muted);margin-bottom:14px;">Selectează direcția mai sus</div>
+      <div class="form-grid">
+        <div class="full">
+          <label>Ce luăm</label>
+          <input type="text" id="desc-peretu" placeholder="Ex: Conserve, haine de iarnă..."/>
+        </div>
+        <div>
+          <label>Cantitate / detalii</label>
+          <input type="text" id="qty-peretu" placeholder="Ex: 3 borcane, 1 geantă..."/>
+        </div>
+        <div>
+          <label>Cine se ocupă</label>
+          <select id="who-peretu">
+            <option value="mario">🧔 Mario</option>
+            <option value="costina">👩 Costina</option>
+            <option value="amandoi">👥 Amândoi</option>
+          </select>
+        </div>
+        <div class="full">
+          <button class="btn-add" style="background:var(--peretu);color:#0a0a0d;" onclick="addPeretuItem()">+ Adaugă în listă Peretu</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>📦 București → Peretu <span id="count-buc-per" style="color:var(--peretu);font-size:13px;"></span></h2>
+      <div id="peretu-buc-per"><div class="empty-state">Nimic de dus la Peretu 🏡</div></div>
+    </div>
+    <div class="card">
+      <h2>🏙️ Peretu → București <span id="count-per-buc" style="color:#fa9c6c;font-size:13px;"></span></h2>
+      <div id="peretu-per-buc"><div class="empty-state">Nimic de adus din Peretu 🏙️</div></div>
+    </div>
+    <div class="card">
+      <h2>✅ Transportate</h2>
+      <div id="peretu-done"><div class="empty-state">Nimic transportat încă</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://lkzqjvoxmjajtrrwneuw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxrenFqdm94bWphanRycnduZXV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjY5MTUsImV4cCI6MjA4OTQwMjkxNX0.B5vywaZqBByQWD6sC6Lfms8e0qpkdWM4ueFLruDlwc0';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── Loading overlay ──
+function showLoading() {
+  document.getElementById('loading-overlay').style.display = 'flex';
+}
+function hideLoading() {
+  document.getElementById('loading-overlay').style.display = 'none';
+}
+
+const CAT_META = {
+  comida:        { icon: '🛒', color: '#7c6cfa' },
+  fastfood:      { icon: '🍔', color: '#ff8c42' },
+  tigari:        { icon: '🚬', color: '#a8a8b3' },
+  suministros:   { icon: '💡', color: '#6cf0c2' },
+  transporte:    { icon: '🚌', color: '#facc6c' },
+  salidas:       { icon: '🍻', color: '#fa9c6c' },
+  otros:         { icon: '📦', color: '#8a8a8a' },
+};
+
+const CAT_NAMES = {
+  comida: 'Cumpărături Casă', fastfood: 'FastFood', tigari: 'Heets',
+  suministros: 'Utilități', transporte: 'Transport', salidas: 'Ieșiri', otros: 'Altele'
+};
+
+const SECTION_COLOR = { mario: '#6cf0c2', costina: '#fa6c9a', together: '#facc6c' };
+const SECTIONS = ['mario', 'costina', 'together', 'lista', 'peretu'];
+
+let data = { mario: [], costina: [], together: [] };
+
+// Set today's date
+['mario','costina','together'].forEach(s => { document.getElementById('date-' + s).valueAsDate = new Date(); });
+
+// save() replaced by Supabase calls
+
+function fmt(n) { return n.toFixed(2).replace('.', ',') + ' lei'; }
+
+function switchTab(tab) {
+  SECTIONS.forEach(s => {
+    document.getElementById('panel-' + s).classList.toggle('active', s === tab);
+    const btn = document.getElementById('tab-btn-' + s);
+    btn.className = 'tab-btn' + (s === tab ? ' active-' + s : '');
+  });
+}
+
+function addExpense(section) {
+  const desc = document.getElementById('desc-' + section).value.trim();
+  const amount = parseFloat(document.getElementById('amount-' + section).value);
+  const category = document.getElementById('category-' + section).value;
+  const date = document.getElementById('date-' + section).value;
+
+  if (!desc || isNaN(amount) || amount <= 0) {
+    ['desc-' + section, 'amount-' + section].forEach(id => {
+      document.getElementById(id).style.borderColor = '#fa6c9a';
+      setTimeout(() => document.getElementById(id).style.borderColor = '', 1500);
+    });
+    return;
+  }
+
+  const newItem = { id: Date.now(), sectiune: section, descriere: desc, suma: amount, categorie: category, data: date };
+  data[section].unshift(newItem);
+  renderSection(section);
+  renderTabTotals();
+  sb.from('cheltuieli').insert([{{ id: newItem.id, sectiune: section, descriere: desc, suma: amount, categorie: category, data: date }}])
+    .then(({ error }) => { if (error) console.error('Supabase insert error:', error); });
+
+  document.getElementById('desc-' + section).value = '';
+  document.getElementById('amount-' + section).value = '';
+  document.getElementById('date-' + section).valueAsDate = new Date();
+}
+
+function deleteExpense(section, id) {
+  data[section] = data[section].filter(e => e.id !== id);
+  renderSection(section);
+  renderTabTotals();
+  sb.from('cheltuieli').delete().eq('id', id)
+    .then(({ error }) => { if (error) console.error('Supabase delete error:', error); });
+}
+
+function renderTabTotals() {
+  ['mario','costina','together'].forEach(s => {
+    const total = data[s].reduce((a, e) => a + e.amount, 0);
+    document.getElementById('tab-total-' + s).textContent = fmt(total);
+  });
+}
+
+function renderSection(section) {
+  const expenses = data[section];
+  const color = SECTION_COLOR[section];
+  const total = expenses.reduce((a, e) => a + e.amount, 0);
+
+  document.getElementById('pie-total-' + section).textContent = fmt(total);
+  drawPie(section, expenses, total);
+
+  const cats = {};
+  expenses.forEach(e => { cats[e.category] = (cats[e.category] || 0) + e.amount; });
+  renderCats('cats-' + section, cats, total, color);
+  renderTxns('txns-' + section, section, expenses, color);
+}
+
+function drawPie(section, expenses, total) {
+  const canvas = document.getElementById('pie-' + section);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const cx = W/2, cy = H/2, r = 68, line = 20;
+
+  ctx.strokeStyle = '#2e2e3a';
+  ctx.lineWidth = line; ctx.lineCap = 'butt';
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+
+  if (total === 0) return;
+
+  const cats = {};
+  expenses.forEach(e => { cats[e.category] = (cats[e.category] || 0) + e.amount; });
+  const sorted = Object.entries(cats).sort((a, b) => b[1] - a[1]);
+  let startAngle = -Math.PI / 2;
+
+  sorted.forEach(([cat, amt]) => {
+    const sweep = (amt / total) * Math.PI * 2;
+    ctx.strokeStyle = (CAT_META[cat] || {}).color || SECTION_COLOR[section];
+    ctx.lineWidth = line;
+    ctx.lineCap = sorted.length === 1 ? 'butt' : 'round';
+    ctx.beginPath(); ctx.arc(cx, cy, r, startAngle, startAngle + sweep); ctx.stroke();
+    startAngle += sweep;
+  });
+}
+
+function renderCats(elId, cats, total, color) {
+  const el = document.getElementById(elId);
+  if (!Object.keys(cats).length) { el.innerHTML = '<div class="empty-state">Nicio cheltuială încă</div>'; return; }
+  el.innerHTML = Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([cat, amt]) => {
+    const meta = CAT_META[cat] || { icon: '📦', color };
+    const pct = total > 0 ? (amt / total * 100).toFixed(0) : 0;
+    return `<div class="cat-row">
+      <div class="cat-icon">${meta.icon}</div>
+      <div class="cat-info">
+        <div class="cat-name">${CAT_NAMES[cat] || cat}</div>
+        <div class="cat-bar-wrap"><div class="cat-bar" style="width:${pct}%;background:${meta.color}"></div></div>
+      </div>
+      <div class="cat-amount" style="color:${meta.color}">${fmt(amt)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTxns(elId, section, expenses, color) {
+  const el = document.getElementById(elId);
+  if (!expenses.length) { el.innerHTML = '<div class="empty-state">Nu există cheltuieli înregistrate 👀</div>'; return; }
+  const labels = { mario: 'Mario', costina: 'Costina', together: 'Împreună' };
+  el.innerHTML = expenses.map(e => {
+    const meta = CAT_META[e.category] || { icon: '📦' };
+    const dateStr = e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' }) : '';
+    return `<div class="txn-item">
+      <div class="txn-icon">${meta.icon}</div>
+      <div class="txn-info">
+        <div class="txn-desc">${e.desc}</div>
+        <div class="txn-meta">${dateStr} · ${CAT_NAMES[e.category] || e.category}</div>
+      </div>
+      <div class="txn-right">
+        <div class="txn-amount" style="color:${color}">${fmt(e.amount)}</div>
+        <div class="txn-badge badge-${section}">${labels[section]}</div>
+      </div>
+      <button class="btn-del" onclick="deleteExpense('${section}', ${e.id})" title="Șterge">✕</button>
+    </div>`;
+  }).join('');
+}
+
+
+// ── LISTA CUMPĂRĂTURI ──
+let listaItems = [];
+
+function addListItem() {
+  const desc = document.getElementById('desc-lista').value.trim();
+  const qty = document.getElementById('qty-lista').value.trim();
+  const who = document.getElementById('who-lista').value;
+  if (!desc) { document.getElementById('desc-lista').style.borderColor='#fa6c9a'; setTimeout(()=>document.getElementById('desc-lista').style.borderColor='',1500); return; }
+  const newL = { id: Date.now(), descriere: desc, cantitate: qty, cine: who, done: false };
+  listaItems.unshift(newL);
+  renderLista();
+  sb.from('lista_cumparaturi').insert([newL])
+    .then(({ error }) => { if (error) console.error(error); });
+  document.getElementById('desc-lista').value = '';
+  document.getElementById('qty-lista').value = '';
+}
+
+function toggleListItem(id) {
+  listaItems = listaItems.map(i => i.id === id ? {{...i, done: !i.done}} : i);
+  renderLista();
+  const updated = listaItems.find(i => i.id === id);
+  sb.from('lista_cumparaturi').update({{ done: updated.done }}).eq('id', id)
+    .then(({ error }) => { if (error) console.error(error); });
+}
+
+function deleteListItem(id) {
+  listaItems = listaItems.filter(i => i.id !== id);
+  renderLista();
+  sb.from('lista_cumparaturi').delete().eq('id', id)
+    .then(({ error }) => { if (error) console.error(error); });
+}
+
+function renderLista() {
+  const active = listaItems.filter(i => !i.done);
+  const done = listaItems.filter(i => i.done);
+  const whoNames = { mario: '🧔 Mario', costina: '👩 Costina', oricare: '👥 Oricare' };
+  document.getElementById('lista-count').textContent = active.length ? '(' + active.length + ' produse)' : '';
+
+  const elA = document.getElementById('lista-items');
+  elA.innerHTML = active.length ? active.map(i => `
+    <div class="txn-item" style="cursor:pointer" onclick="toggleListItem(${i.id})">
+      <div class="txn-icon">🛒</div>
+      <div class="txn-info">
+        <div class="txn-desc">${i.desc}</div>
+        <div class="txn-meta">${i.qty ? i.qty + ' · ' : ''}${whoNames[i.who]}</div>
+      </div>
+      <div class="txn-right">
+        <div class="txn-badge badge-lista" style="background:rgba(96,197,250,0.15);color:var(--lista)">De cumpărat</div>
+      </div>
+      <button class="btn-del" onclick="event.stopPropagation();deleteListItem(${i.id})">✕</button>
+    </div>`).join('') : '<div class="empty-state">Lista e goală 🛒</div>';
+
+  const elD = document.getElementById('lista-done');
+  elD.innerHTML = done.length ? done.map(i => `
+    <div class="txn-item" style="opacity:0.5;cursor:pointer" onclick="toggleListItem(${i.id})">
+      <div class="txn-icon">✅</div>
+      <div class="txn-info">
+        <div class="txn-desc" style="text-decoration:line-through">${i.desc}</div>
+        <div class="txn-meta">${i.qty ? i.qty + ' · ' : ''}${whoNames[i.who]}</div>
+      </div>
+      <button class="btn-del" onclick="event.stopPropagation();deleteListItem(${i.id})">✕</button>
+    </div>`).join('') : '<div class="empty-state">Nimic cumpărat încă</div>';
+}
+
+// ── PERETU ──
+let peretuItems = [];
+let peretuDirection = 'buc-per';
+
+function setDirection(dir) {
+  peretuDirection = dir;
+  const labels = { 'buc-per': '📦 Ducem la Peretu', 'per-buc': '🏙️ Aducem din Peretu' };
+  document.getElementById('peretu-direction-label').textContent = '→ ' + labels[dir];
+  document.getElementById('peretu-direction-label').style.color = dir === 'buc-per' ? 'var(--peretu)' : '#fa9c6c';
+}
+
+function addPeretuItem() {
+  const desc = document.getElementById('desc-peretu').value.trim();
+  const qty = document.getElementById('qty-peretu').value.trim();
+  const who = document.getElementById('who-peretu').value;
+  if (!desc) { document.getElementById('desc-peretu').style.borderColor='#fa6c9a'; setTimeout(()=>document.getElementById('desc-peretu').style.borderColor='',1500); return; }
+  const newP = { id: Date.now(), descriere: desc, cantitate: qty, cine: who, directie: peretuDirection, done: false };
+  peretuItems.unshift(newP);
+  renderPeretu();
+  sb.from('peretu').insert([newP])
+    .then(({ error }) => { if (error) console.error(error); });
+  document.getElementById('desc-peretu').value = '';
+  document.getElementById('qty-peretu').value = '';
+}
+
+function togglePeretuItem(id) {
+  peretuItems = peretuItems.map(i => i.id === id ? {{...i, done: !i.done}} : i);
+  renderPeretu();
+  const updatedP = peretuItems.find(i => i.id === id);
+  sb.from('peretu').update({{ done: updatedP.done }}).eq('id', id)
+    .then(({ error }) => { if (error) console.error(error); });
+}
+
+function deletePeretuItem(id) {
+  peretuItems = peretuItems.filter(i => i.id !== id);
+  renderPeretu();
+  sb.from('peretu').delete().eq('id', id)
+    .then(({ error }) => { if (error) console.error(error); });
+}
+
+function renderPeretu() {
+  const whoNames = { mario: '🧔 Mario', costina: '👩 Costina', amandoi: '👥 Amândoi' };
+  const bp = peretuItems.filter(i => i.dir === 'buc-per' && !i.done);
+  const pb = peretuItems.filter(i => i.dir === 'per-buc' && !i.done);
+  const done = peretuItems.filter(i => i.done);
+
+  document.getElementById('count-buc-per').textContent = bp.length ? '(' + bp.length + ')' : '';
+  document.getElementById('count-per-buc').textContent = pb.length ? '(' + pb.length + ')' : '';
+
+  function renderList(items, elId, color, label) {
+    const el = document.getElementById(elId);
+    el.innerHTML = items.length ? items.map(i => `
+      <div class="txn-item" style="cursor:pointer" onclick="togglePeretuItem(${i.id})">
+        <div class="txn-icon">${i.dir === 'buc-per' ? '📦' : '🏙️'}</div>
+        <div class="txn-info">
+          <div class="txn-desc">${i.desc}</div>
+          <div class="txn-meta">${i.qty ? i.qty + ' · ' : ''}${whoNames[i.who]}</div>
+        </div>
+        <div class="txn-right">
+          <div class="txn-badge" style="background:rgba(0,0,0,0.2);color:${color}">${label}</div>
+        </div>
+        <button class="btn-del" onclick="event.stopPropagation();deletePeretuItem(${i.id})">✕</button>
+      </div>`).join('') : `<div class="empty-state">${elId === 'peretu-buc-per' ? 'Nimic de dus la Peretu 🏡' : 'Nimic de adus din Peretu 🏙️'}</div>`;
+  }
+
+  renderList(bp, 'peretu-buc-per', 'var(--peretu)', 'De dus');
+  renderList(pb, 'peretu-per-buc', '#fa9c6c', 'De adus');
+
+  const elD = document.getElementById('peretu-done');
+  elD.innerHTML = done.length ? done.map(i => `
+    <div class="txn-item" style="opacity:0.5;cursor:pointer" onclick="togglePeretuItem(${i.id})">
+      <div class="txn-icon">✅</div>
+      <div class="txn-info">
+        <div class="txn-desc" style="text-decoration:line-through">${i.desc}</div>
+        <div class="txn-meta">${i.qty ? i.qty + ' · ' : ''}${whoNames[i.who]} · ${i.dir === 'buc-per' ? 'Buc→Per' : 'Per→Buc'}</div>
+      </div>
+      <button class="btn-del" onclick="event.stopPropagation();deletePeretuItem(${i.id})">✕</button>
+    </div>`).join('') : '<div class="empty-state">Nimic transportat încă</div>';
+}
+
+async function loadAll() {
+  showLoading();
+  try {
+    // Load cheltuieli
+    const { data: chData } = await sb.from('cheltuieli').select('*').order('id', { ascending: false });
+    if (chData) {
+      data = { mario: [], costina: [], together: [] };
+      chData.forEach(r => {
+        const item = { id: r.id, desc: r.descriere, amount: parseFloat(r.suma), category: r.categorie, date: r.data };
+        if (data[r.sectiune]) data[r.sectiune].push(item);
+      });
+    }
+
+    // Load lista
+    const { data: lData } = await sb.from('lista_cumparaturi').select('*').order('id', { ascending: false });
+    if (lData) listaItems = lData.map(r => ({ id: r.id, desc: r.descriere, qty: r.cantitate, who: r.cine, done: r.done }));
+
+    // Load peretu
+    const { data: pData } = await sb.from('peretu').select('*').order('id', { ascending: false });
+    if (pData) peretuItems = pData.map(r => ({ id: r.id, desc: r.descriere, qty: r.cantitate, who: r.cine, dir: r.directie, done: r.done }));
+
+  } catch(e) {
+    console.error('Load error:', e);
+  }
+
+  ['mario','costina','together'].forEach(s => renderSection(s));
+  renderTabTotals();
+  renderLista();
+  renderPeretu();
+  hideLoading();
+}
+
+loadAll();
+</script>
+<div id="loading-overlay" style="display:flex;position:fixed;inset:0;background:rgba(15,15,19,0.85);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
+  <div style="width:40px;height:40px;border:3px solid #2e2e3a;border-top-color:#6cf0c2;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <div style="color:#7a7a90;font-size:14px;font-family:Inter,sans-serif;">Se încarcă...</div>
+</div>
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+</body>
+</html>
