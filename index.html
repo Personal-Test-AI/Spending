@@ -272,6 +272,29 @@
   }
   .btn-close-week:hover { opacity: 0.85; }
 
+
+  /* ── ALERT BANNER ── */
+  .alert-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(250,108,154,0.15), rgba(250,204,108,0.15));
+    border: 1px solid rgba(250,108,154,0.4);
+    border-radius: 14px;
+    padding: 12px 16px;
+    max-width: 500px;
+    margin: 0 auto;
+    animation: pulse-border 2s infinite;
+  }
+  @keyframes pulse-border {
+    0%, 100% { border-color: rgba(250,108,154,0.4); }
+    50% { border-color: rgba(250,108,154,0.9); }
+  }
+  .alert-icon { font-size: 22px; flex-shrink: 0; }
+  .alert-info { text-align: left; }
+  .alert-title { font-size: 13px; font-weight: 700; color: #fa6c9a; font-family: Inter, sans-serif; }
+  .alert-countdown { font-size: 20px; font-weight: 800; color: var(--text); font-family: Inter, sans-serif; margin-top: 2px; letter-spacing: -0.5px; }
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -313,10 +336,42 @@
   }
   .btn-close-week:hover { opacity: 0.85; }
 
+
+  /* ── ALERT BANNER ── */
+  .alert-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(250,108,154,0.15), rgba(250,204,108,0.15));
+    border: 1px solid rgba(250,108,154,0.4);
+    border-radius: 14px;
+    padding: 12px 16px;
+    max-width: 500px;
+    margin: 0 auto;
+    animation: pulse-border 2s infinite;
+  }
+  @keyframes pulse-border {
+    0%, 100% { border-color: rgba(250,108,154,0.4); }
+    50% { border-color: rgba(250,108,154,0.9); }
+  }
+  .alert-icon { font-size: 22px; flex-shrink: 0; }
+  .alert-info { text-align: left; }
+  .alert-title { font-size: 13px; font-weight: 700; color: #fa6c9a; font-family: Inter, sans-serif; }
+  .alert-countdown { font-size: 20px; font-weight: 800; color: var(--text); font-family: Inter, sans-serif; margin-top: 2px; letter-spacing: -0.5px; }
+
 </style>
 
 <header>
   <h1>Spending</h1>
+  <div id="week-alert" style="display:none; margin-top:12px;">
+    <div class="alert-banner">
+      <span class="alert-icon">⚠️</span>
+      <div class="alert-info">
+        <div class="alert-title">Săptămâna se închide în curând!</div>
+        <div class="alert-countdown" id="alert-countdown">—</div>
+      </div>
+    </div>
+  </div>
 </header>
 
 <div class="container">
@@ -814,11 +869,16 @@ function getWeekStart() {
 }
 
 function getWeekEnd() {
-  const start = getWeekStart();
-  const sunday = new Date(start);
-  sunday.setDate(start.getDate() + 6);
-  sunday.setHours(22, 30, 0, 0);
-  return sunday;
+  // TEST MODE - ends in 2 minutes
+  const test = new Date();
+  test.setMinutes(test.getMinutes() + 2);
+  return test;
+  // REAL MODE (uncomment when done testing):
+  // const start = getWeekStart();
+  // const sunday = new Date(start);
+  // sunday.setDate(start.getDate() + 6);
+  // sunday.setHours(22, 30, 0, 0);
+  // return sunday;
 }
 
 function fmtDate(d) {
@@ -830,19 +890,49 @@ function updateWeekBanner() {
   const end = getWeekEnd();
   const now = new Date();
   
-  document.getElementById('week-dates').textContent = fmtDate(start) + ' → ' + fmtDate(end);
+  const wDates = document.getElementById('week-dates');
+  const wDay = document.getElementById('week-day');
+  if (wDates) wDates.textContent = fmtDate(start) + ' → ' + fmtDate(end);
   
   const days = ['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
   const timeLeft = end - now;
+  
   if (timeLeft > 0) {
     const daysLeft = Math.floor(timeLeft / (1000*60*60*24));
     const hoursLeft = Math.floor((timeLeft % (1000*60*60*24)) / (1000*60*60));
-    document.getElementById('week-day').textContent = days[now.getDay()] + ' · ' + (daysLeft > 0 ? daysLeft + 'z ' : '') + hoursLeft + 'h până la închidere';
+    const minsLeft = Math.floor((timeLeft % (1000*60*60)) / (1000*60));
+    const secsLeft = Math.floor((timeLeft % (1000*60)) / 1000);
+    if (wDay) wDay.textContent = days[now.getDay()] + ' · ' + (daysLeft > 0 ? daysLeft + 'z ' : '') + hoursLeft + 'h până la închidere';
+    
+    // Show alert if less than 10 hours left
+    const alertEl = document.getElementById('week-alert');
+    const countdownEl = document.getElementById('alert-countdown');
+    if (timeLeft <= 10 * 60 * 1000) { // TEST: 10 min (normal: 10 * 60 * 60 * 1000)
+      if (alertEl) alertEl.style.display = 'block';
+      if (countdownEl) {
+        const h = String(hoursLeft).padStart(2,'0');
+        const m = String(minsLeft).padStart(2,'0');
+        const s = String(secsLeft).padStart(2,'0');
+        countdownEl.textContent = h + ':' + m + ':' + s + ' rămase';
+      }
+    } else {
+      if (alertEl) alertEl.style.display = 'none';
+    }
   } else {
-    document.getElementById('week-day').textContent = '⚠️ Săptămâna a expirat — închide-o manual!';
-    document.getElementById('week-day').style.color = '#fa6c9a';
+    if (wDay) {
+      wDay.textContent = '⚠️ Săptămâna a expirat — închide-o manual!';
+      wDay.style.color = '#fa6c9a';
+    }
+    // Show expired alert
+    const alertEl = document.getElementById('week-alert');
+    const countdownEl = document.getElementById('alert-countdown');
+    if (alertEl) alertEl.style.display = 'block';
+    if (countdownEl) countdownEl.textContent = 'Săptămâna a expirat! 🔒';
   }
 }
+
+// Update countdown every second
+setInterval(updateWeekBanner, 1000);
 
 function confirmCloseWeek() {
   if (!confirm('Ești sigur că vrei să închizi săptămâna? Datele vor fi arhivate și se va începe una nouă.')) return;
@@ -883,6 +973,9 @@ async function closeWeek() {
   // Reload istoric
   loadIstoricData();
   
+  // Hide alert
+  const alertEl = document.getElementById('week-alert');
+  if (alertEl) alertEl.style.display = 'none';
   alert('✅ Săptămâna a fost arhivată! A început una nouă.');
 }
 
