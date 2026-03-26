@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f0f13">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Spending">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Spending 🏠</title>
@@ -273,8 +277,138 @@
   .btn-close-week:hover { opacity: 0.85; }
 
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+// ── PWA & NOTIFICĂRI ──
+async function initPWA() {
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register('sw.js');
+      console.log('Service Worker registered');
+    } catch(e) {
+      console.log('SW registration failed:', e);
+    }
+  }
+
+  // Request notification permission
+  if ('Notification' in window && Notification.permission === 'default') {
+    setTimeout(async () => {
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        scheduleWeekEndNotification();
+      }
+    }, 3000); // Ask after 3 seconds
+  } else if (Notification.permission === 'granted') {
+    scheduleWeekEndNotification();
+  }
+}
+
+function scheduleWeekEndNotification() {
+  if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
+
+  const end = getWeekEnd();
+  const alertTime = new Date(end.getTime() - 10 * 60 * 60 * 1000); // 10h before
+  const now = new Date();
+  const delay = alertTime - now;
+
+  if (delay > 0) {
+    navigator.serviceWorker.controller.postMessage({
+      type: 'SCHEDULE_NOTIFICATION',
+      title: '⚠️ Spending — Săptămâna se închide!',
+      body: 'Mai sunt 10 ore până la închiderea săptămânii. Nu uita să înregistrezi cheltuielile!',
+      delay
+    });
+    console.log('Notificare programată în ' + Math.round(delay/1000/60) + ' minute');
+  }
+}
+
+// Show install prompt for iOS
+function showInstallTip() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const shown = localStorage.getItem('install_tip_shown');
+
+  if (isIOS && !isStandalone && !shown) {
+    setTimeout(() => {
+      const tip = document.createElement('div');
+      tip.style.cssText = 'position:fixed;bottom:90px;left:16px;right:16px;background:#18181f;border:1px solid #2e2e3a;border-radius:16px;padding:14px 16px;z-index:999;display:flex;align-items:center;gap:12px;animation:fadeIn 0.3s ease;';
+      tip.innerHTML = '<span style="font-size:22px">📲</span><div style="flex:1;font-size:13px;color:#f0f0f5;">Adaugă pe ecranul principal: apasă <strong>□↑</strong> apoi <strong>"Adaugă pe ecran"</strong></div><button onclick="this.parentElement.remove();localStorage.setItem('install_tip_shown','1')" style="background:none;border:none;color:#7a7a90;font-size:18px;cursor:pointer;">✕</button>';
+      document.body.appendChild(tip);
+      setTimeout(() => tip.remove(), 8000);
+      localStorage.setItem('install_tip_shown', '1');
+    }, 2000);
+  }
+}
+
+initPWA();
+showInstallTip();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+// ── PWA & NOTIFICĂRI ──
+async function initPWA() {
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register('sw.js');
+      console.log('Service Worker registered');
+    } catch(e) {
+      console.log('SW registration failed:', e);
+    }
+  }
+
+  // Request notification permission
+  if ('Notification' in window && Notification.permission === 'default') {
+    setTimeout(async () => {
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        scheduleWeekEndNotification();
+      }
+    }, 3000); // Ask after 3 seconds
+  } else if (Notification.permission === 'granted') {
+    scheduleWeekEndNotification();
+  }
+}
+
+function scheduleWeekEndNotification() {
+  if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
+
+  const end = getWeekEnd();
+  const alertTime = new Date(end.getTime() - 10 * 60 * 60 * 1000); // 10h before
+  const now = new Date();
+  const delay = alertTime - now;
+
+  if (delay > 0) {
+    navigator.serviceWorker.controller.postMessage({
+      type: 'SCHEDULE_NOTIFICATION',
+      title: '⚠️ Spending — Săptămâna se închide!',
+      body: 'Mai sunt 10 ore până la închiderea săptămânii. Nu uita să înregistrezi cheltuielile!',
+      delay
+    });
+    console.log('Notificare programată în ' + Math.round(delay/1000/60) + ' minute');
+  }
+}
+
+// Show install prompt for iOS
+function showInstallTip() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const shown = localStorage.getItem('install_tip_shown');
+
+  if (isIOS && !isStandalone && !shown) {
+    setTimeout(() => {
+      const tip = document.createElement('div');
+      tip.style.cssText = 'position:fixed;bottom:90px;left:16px;right:16px;background:#18181f;border:1px solid #2e2e3a;border-radius:16px;padding:14px 16px;z-index:999;display:flex;align-items:center;gap:12px;animation:fadeIn 0.3s ease;';
+      tip.innerHTML = '<span style="font-size:22px">📲</span><div style="flex:1;font-size:13px;color:#f0f0f5;">Adaugă pe ecranul principal: apasă <strong>□↑</strong> apoi <strong>"Adaugă pe ecran"</strong></div><button onclick="this.parentElement.remove();localStorage.setItem('install_tip_shown','1')" style="background:none;border:none;color:#7a7a90;font-size:18px;cursor:pointer;">✕</button>';
+      document.body.appendChild(tip);
+      setTimeout(() => tip.remove(), 8000);
+      localStorage.setItem('install_tip_shown', '1');
+    }, 2000);
+  }
+}
+
+initPWA();
+showInstallTip();
+</script>
 </head>
 <body>
 <div id="loading-overlay" style="display:flex;position:fixed;inset:0;background:rgba(15,15,19,0.92);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
@@ -1217,6 +1351,71 @@ async function loadAll() {
 
 loadAll();
 
+
+// ── PWA & NOTIFICĂRI ──
+async function initPWA() {
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register('sw.js');
+      console.log('Service Worker registered');
+    } catch(e) {
+      console.log('SW registration failed:', e);
+    }
+  }
+
+  // Request notification permission
+  if ('Notification' in window && Notification.permission === 'default') {
+    setTimeout(async () => {
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        scheduleWeekEndNotification();
+      }
+    }, 3000); // Ask after 3 seconds
+  } else if (Notification.permission === 'granted') {
+    scheduleWeekEndNotification();
+  }
+}
+
+function scheduleWeekEndNotification() {
+  if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
+
+  const end = getWeekEnd();
+  const alertTime = new Date(end.getTime() - 10 * 60 * 60 * 1000); // 10h before
+  const now = new Date();
+  const delay = alertTime - now;
+
+  if (delay > 0) {
+    navigator.serviceWorker.controller.postMessage({
+      type: 'SCHEDULE_NOTIFICATION',
+      title: '⚠️ Spending — Săptămâna se închide!',
+      body: 'Mai sunt 10 ore până la închiderea săptămânii. Nu uita să înregistrezi cheltuielile!',
+      delay
+    });
+    console.log('Notificare programată în ' + Math.round(delay/1000/60) + ' minute');
+  }
+}
+
+// Show install prompt for iOS
+function showInstallTip() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  const shown = localStorage.getItem('install_tip_shown');
+
+  if (isIOS && !isStandalone && !shown) {
+    setTimeout(() => {
+      const tip = document.createElement('div');
+      tip.style.cssText = 'position:fixed;bottom:90px;left:16px;right:16px;background:#18181f;border:1px solid #2e2e3a;border-radius:16px;padding:14px 16px;z-index:999;display:flex;align-items:center;gap:12px;animation:fadeIn 0.3s ease;';
+      tip.innerHTML = '<span style="font-size:22px">📲</span><div style="flex:1;font-size:13px;color:#f0f0f5;">Adaugă pe ecranul principal: apasă <strong>□↑</strong> apoi <strong>"Adaugă pe ecran"</strong></div><button onclick="this.parentElement.remove();localStorage.setItem('install_tip_shown','1')" style="background:none;border:none;color:#7a7a90;font-size:18px;cursor:pointer;">✕</button>';
+      document.body.appendChild(tip);
+      setTimeout(() => tip.remove(), 8000);
+      localStorage.setItem('install_tip_shown', '1');
+    }, 2000);
+  }
+}
+
+initPWA();
+showInstallTip();
 </script>
 </body>
 </html>
