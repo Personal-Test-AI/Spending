@@ -53,7 +53,7 @@
   /* TABS */
   .tabs {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(6, 1fr);
     gap: 10px;
     margin-bottom: 24px;
   }
@@ -90,6 +90,8 @@
   .tab-btn.active-lista    .tab-total { color: var(--lista); }
   .tab-btn.active-peretu   { border-color: var(--peretu);   color: var(--peretu);   background: rgba(184,250,108,0.07); }
   .tab-btn.active-peretu   .tab-total { color: var(--peretu); }
+  .tab-btn.active-istoric  { border-color: #a78bfa; color: #a78bfa; background: rgba(167,139,250,0.07); }
+  .tab-btn.active-istoric  .tab-total { color: #a78bfa; }
 
   /* PANELS */
   .panel { display: none; }
@@ -245,6 +247,17 @@
 
 <div class="container">
 
+
+  <!-- WEEK BANNER -->
+  <div class="week-banner" id="week-banner">
+    <div class="week-info">
+      <div class="week-label">Săptămâna activă</div>
+      <div class="week-dates" id="week-dates">—</div>
+      <div class="week-day" id="week-day">—</div>
+    </div>
+    <button class="btn-close-week" onclick="confirmCloseWeek()">🔒 Închide săptămâna</button>
+  </div>
+
   <!-- TABS -->
   <div class="tabs">
     <button class="tab-btn active-mario" id="tab-btn-mario" onclick="switchTab('mario')">
@@ -271,6 +284,11 @@
       <span class="tab-icon">🚗</span>
       <span class="tab-name">Peretu</span>
       <span class="tab-total" id="tab-total-peretu"> </span>
+    </button>
+    <button class="tab-btn" id="tab-btn-istoric" onclick="switchTab('istoric')">
+      <span class="tab-icon">📅</span>
+      <span class="tab-name">Istoric</span>
+      <span class="tab-total" id="tab-total-istoric"> </span>
     </button>
   </div>
 
@@ -523,6 +541,15 @@
       <div id="peretu-done"><div class="empty-state">Nimic transportat încă</div></div>
     </div>
   </div>
+
+  <!-- PANEL ISTORIC -->
+  <div class="panel" id="panel-istoric">
+    <div class="card">
+      <h2>📅 Istoric Săptămâni</h2>
+      <div id="istoric-list"><div class="empty-state">Nu există săptămâni arhivate încă</div></div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -554,7 +581,7 @@ const CAT_NAMES = {
 };
 
 const SECTION_COLOR = { mario: '#6cf0c2', costina: '#fa6c9a', together: '#facc6c' };
-const SECTIONS = ['mario', 'costina', 'together', 'lista', 'peretu'];
+const SECTIONS = ['mario', 'costina', 'together', 'lista', 'peretu', 'istoric'];
 
 let data = { mario: [], costina: [], together: [] };
 
@@ -696,6 +723,146 @@ function renderTxns(elId, section, expenses, color) {
   }).join('');
 }
 
+
+
+// ── SĂPTĂMÂNA ──
+function getWeekStart() {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun,1=Mon...
+  const diff = day === 0 ? -6 : 1 - day; // go to Monday
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
+function getWeekEnd() {
+  const start = getWeekStart();
+  const sunday = new Date(start);
+  sunday.setDate(start.getDate() + 6);
+  sunday.setHours(17, 30, 0, 0);
+  return sunday;
+}
+
+function fmtDate(d) {
+  return d.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function updateWeekBanner() {
+  const start = getWeekStart();
+  const end = getWeekEnd();
+  const now = new Date();
+  
+  document.getElementById('week-dates').textContent = fmtDate(start) + ' → ' + fmtDate(end);
+  
+  const days = ['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
+  const timeLeft = end - now;
+  if (timeLeft > 0) {
+    const daysLeft = Math.floor(timeLeft / (1000*60*60*24));
+    const hoursLeft = Math.floor((timeLeft % (1000*60*60*24)) / (1000*60*60));
+    document.getElementById('week-day').textContent = days[now.getDay()] + ' · ' + (daysLeft > 0 ? daysLeft + 'z ' : '') + hoursLeft + 'h până la închidere';
+  } else {
+    document.getElementById('week-day').textContent = '⚠️ Săptămâna a expirat — închide-o manual!';
+    document.getElementById('week-day').style.color = '#fa6c9a';
+  }
+}
+
+function confirmCloseWeek() {
+  if (!confirm('Ești sigur că vrei să închizi săptămâna? Datele vor fi arhivate și se va începe una nouă.')) return;
+  closeWeek();
+}
+
+async function closeWeek() {
+  const start = getWeekStart();
+  const end = getWeekEnd();
+  
+  const totalMario = data.mario.reduce((a,e) => a + (parseFloat(e.amount)||0), 0);
+  const totalCostina = data.costina.reduce((a,e) => a + (parseFloat(e.amount)||0), 0);
+  const totalTogether = data.together.reduce((a,e) => a + (parseFloat(e.amount)||0), 0);
+
+  // Save to saptamani table
+  const { error } = await sb.from('saptamani').insert([{
+    id: Date.now(),
+    data_start: fmtDate(start),
+    data_sfarsit: fmtDate(end),
+    mario: JSON.stringify(data.mario),
+    costina: JSON.stringify(data.costina),
+    together: JSON.stringify(data.together),
+    total_mario: totalMario,
+    total_costina: totalCostina,
+    total_together: totalTogether
+  }]);
+
+  if (error) { alert('Eroare la arhivare: ' + error.message); return; }
+
+  // Delete all current cheltuieli
+  await sb.from('cheltuieli').delete().neq('id', 0);
+
+  // Reset local data
+  data = { mario: [], costina: [], together: [] };
+  ['mario','costina','together'].forEach(s => renderSection(s));
+  renderTabTotals();
+  
+  // Reload istoric
+  loadIstoricData();
+  
+  alert('✅ Săptămâna a fost arhivată! A început una nouă.');
+}
+
+async function loadIstoricData() {
+  const { data: sapData } = await sb.from('saptamani').select('*').order('id', { ascending: false });
+  renderIstoric(sapData || []);
+  document.getElementById('tab-total-istoric').textContent = sapData ? sapData.length + ' săpt.' : '';
+}
+
+function renderIstoric(saptamani) {
+  const el = document.getElementById('istoric-list');
+  if (!saptamani.length) {
+    el.innerHTML = '<div class="empty-state">Nu există săptămâni arhivate încă</div>';
+    return;
+  }
+  el.innerHTML = saptamani.map((s, idx) => {
+    const mario = typeof s.mario === 'string' ? JSON.parse(s.mario) : (s.mario || []);
+    const costina = typeof s.costina === 'string' ? JSON.parse(s.costina) : (s.costina || []);
+    const together = typeof s.together === 'string' ? JSON.parse(s.together) : (s.together || []);
+    const total = (parseFloat(s.total_mario)||0) + (parseFloat(s.total_costina)||0) + (parseFloat(s.total_together)||0);
+    
+    return `<div class="sap-card" onclick="toggleSapDetail(${idx})">
+      <div class="sap-dates">📅 ${s.data_start} → ${s.data_sfarsit}</div>
+      <div class="sap-totals">
+        <div class="sap-total-item">🧔 Mario: <span style="color:var(--mario)">${fmt(parseFloat(s.total_mario)||0)}</span></div>
+        <div class="sap-total-item">👩 Costina: <span style="color:var(--costina)">${fmt(parseFloat(s.total_costina)||0)}</span></div>
+        <div class="sap-total-item">🏠 Împreună: <span style="color:var(--together)">${fmt(parseFloat(s.total_together)||0)}</span></div>
+        <div class="sap-total-item">💰 Total: <span style="color:#a78bfa">${fmt(total)}</span></div>
+      </div>
+      <div class="sap-detail" id="sap-detail-${idx}">
+        ${renderSapDetails(mario, 'Mario', 'var(--mario)')}
+        ${renderSapDetails(costina, 'Costina', 'var(--costina)')}
+        ${renderSapDetails(together, 'Împreună', 'var(--together)')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSapDetail(idx) {
+  const el = document.getElementById('sap-detail-' + idx);
+  el.classList.toggle('open');
+}
+
+function renderSapDetails(items, name, color) {
+  if (!items.length) return '';
+  return `<div style="margin-top:10px;">
+    <div style="font-size:12px;font-weight:700;color:${color};margin-bottom:6px;">${name}</div>
+    ${items.map(e => `<div class="txn-item" style="margin-bottom:4px;">
+      <div class="txn-icon">${(CAT_META[e.category||e.categorie]||{icon:'📦'}).icon}</div>
+      <div class="txn-info">
+        <div class="txn-desc">${e.desc||e.descriere||''}</div>
+        <div class="txn-meta">${e.date||e.data||''}</div>
+      </div>
+      <div class="txn-amount" style="color:${color}">${fmt(parseFloat(e.amount||e.suma)||0)}</div>
+    </div>`).join('')}
+  </div>`;
+}
 
 // ── LISTA CUMPĂRĂTURI ──
 let listaItems = [];
@@ -876,6 +1043,8 @@ async function loadAll() {
   renderTabTotals();
   renderLista();
   renderPeretu();
+  await loadIstoricData();
+  updateWeekBanner();
   hideLoading();
 }
 
