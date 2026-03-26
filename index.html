@@ -827,13 +827,18 @@ function renderIstoric(saptamani) {
     const together = typeof s.together === 'string' ? JSON.parse(s.together) : (s.together || []);
     const total = (parseFloat(s.total_mario)||0) + (parseFloat(s.total_costina)||0) + (parseFloat(s.total_together)||0);
     
-    return `<div class="sap-card" onclick="toggleSapDetail(${idx})">
-      <div class="sap-dates">📅 ${s.data_start} → ${s.data_sfarsit}</div>
-      <div class="sap-totals">
-        <div class="sap-total-item">🧔 Mario: <span style="color:var(--mario)">${fmt(parseFloat(s.total_mario)||0)}</span></div>
-        <div class="sap-total-item">👩 Costina: <span style="color:var(--costina)">${fmt(parseFloat(s.total_costina)||0)}</span></div>
-        <div class="sap-total-item">🏠 Împreună: <span style="color:var(--together)">${fmt(parseFloat(s.total_together)||0)}</span></div>
-        <div class="sap-total-item">💰 Total: <span style="color:#a78bfa">${fmt(total)}</span></div>
+    return `<div class="sap-card" id="sap-card-${idx}">
+      <div class="sap-header" onclick="toggleSapDetail(${idx})" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+        <div>
+          <div class="sap-dates">📅 ${s.data_start} → ${s.data_sfarsit}</div>
+          <div class="sap-totals">
+            <div class="sap-total-item">🧔 <span style="color:var(--mario)">${fmt(parseFloat(s.total_mario)||0)}</span></div>
+            <div class="sap-total-item">👩 <span style="color:var(--costina)">${fmt(parseFloat(s.total_costina)||0)}</span></div>
+            <div class="sap-total-item">🏠 <span style="color:var(--together)">${fmt(parseFloat(s.total_together)||0)}</span></div>
+            <div class="sap-total-item">💰 <span style="color:#a78bfa;font-weight:700;">${fmt(total)}</span></div>
+          </div>
+        </div>
+        <div id="sap-arrow-${idx}" style="font-size:18px;color:var(--text-muted);transition:transform 0.2s;flex-shrink:0;margin-left:12px;">›</div>
       </div>
       <div class="sap-detail" id="sap-detail-${idx}">
         ${renderSapDetails(mario, 'Mario', 'var(--mario)')}
@@ -846,7 +851,9 @@ function renderIstoric(saptamani) {
 
 function toggleSapDetail(idx) {
   const el = document.getElementById('sap-detail-' + idx);
-  el.classList.toggle('open');
+  const arrow = document.getElementById('sap-arrow-' + idx);
+  const isOpen = el.classList.toggle('open');
+  arrow.style.transform = isOpen ? 'rotate(90deg)' : 'rotate(0deg)';
 }
 
 function renderSapDetails(items, name, color) {
