@@ -931,8 +931,6 @@ function updateWeekBanner() {
   }
 }
 
-// Update countdown every second
-setInterval(updateWeekBanner, 1000);
 
 function confirmCloseWeek() {
   if (!confirm('Ești sigur că vrei să închizi săptămâna? Datele vor fi arhivate și se va începe una nouă.')) return;
@@ -1226,6 +1224,8 @@ async function loadAll() {
 }
 
 loadAll();
+// Start countdown ticker after page loads
+setInterval(updateWeekBanner, 1000);
 </script>
 </body>
 </html>
