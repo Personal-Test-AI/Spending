@@ -869,16 +869,11 @@ function getWeekStart() {
 }
 
 function getWeekEnd() {
-  // TEST MODE - ends in 2 minutes
+  // TEST MODE - ends in 10h 7min (alert appears after ~7 min wait)
   const test = new Date();
-  test.setMinutes(test.getMinutes() + 2);
+  test.setHours(test.getHours() + 10);
+  test.setMinutes(test.getMinutes() + 7);
   return test;
-  // REAL MODE (uncomment when done testing):
-  // const start = getWeekStart();
-  // const sunday = new Date(start);
-  // sunday.setDate(start.getDate() + 6);
-  // sunday.setHours(22, 30, 0, 0);
-  // return sunday;
 }
 
 function fmtDate(d) {
@@ -892,6 +887,9 @@ function updateWeekBanner() {
   
   const wDates = document.getElementById('week-dates');
   const wDay = document.getElementById('week-day');
+  const alertEl = document.getElementById('week-alert');
+  const countdownEl = document.getElementById('alert-countdown');
+
   if (wDates) wDates.textContent = fmtDate(start) + ' → ' + fmtDate(end);
   
   const days = ['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
@@ -902,17 +900,19 @@ function updateWeekBanner() {
     const hoursLeft = Math.floor((timeLeft % (1000*60*60*24)) / (1000*60*60));
     const minsLeft = Math.floor((timeLeft % (1000*60*60)) / (1000*60));
     const secsLeft = Math.floor((timeLeft % (1000*60)) / 1000);
+    
     if (wDay) wDay.textContent = days[now.getDay()] + ' · ' + (daysLeft > 0 ? daysLeft + 'z ' : '') + hoursLeft + 'h până la închidere';
     
-    // Show alert if less than 10 hours left
-    const alertEl = document.getElementById('week-alert');
-    const countdownEl = document.getElementById('alert-countdown');
-    if (timeLeft <= 10 * 60 * 1000) { // TEST: 10 min (normal: 10 * 60 * 60 * 1000)
+    const threshold = 10 * 60 * 60 * 1000 + 5 * 60 * 1000; // TEST: 10h5min threshold
+    if (timeLeft <= threshold) {
       if (alertEl) alertEl.style.display = 'block';
       if (countdownEl) {
-        const h = String(hoursLeft).padStart(2,'0');
-        const m = String(minsLeft).padStart(2,'0');
-        const s = String(secsLeft).padStart(2,'0');
+        const totalHours = Math.floor(timeLeft / (1000*60*60));
+        const totalMins = Math.floor((timeLeft % (1000*60*60)) / (1000*60));
+        const totalSecs = Math.floor((timeLeft % (1000*60)) / 1000);
+        const h = String(totalHours).padStart(2,'0');
+        const m = String(totalMins).padStart(2,'0');
+        const s = String(totalSecs).padStart(2,'0');
         countdownEl.textContent = h + ':' + m + ':' + s + ' rămase';
       }
     } else {
@@ -923,12 +923,14 @@ function updateWeekBanner() {
       wDay.textContent = '⚠️ Săptămâna a expirat — închide-o manual!';
       wDay.style.color = '#fa6c9a';
     }
-    // Show expired alert
-    const alertEl = document.getElementById('week-alert');
-    const countdownEl = document.getElementById('alert-countdown');
     if (alertEl) alertEl.style.display = 'block';
     if (countdownEl) countdownEl.textContent = 'Săptămâna a expirat! 🔒';
   }
+}
+
+function startCountdown() {
+  updateWeekBanner();
+  setInterval(updateWeekBanner, 1000);
 }
 
 
@@ -1219,13 +1221,12 @@ async function loadAll() {
   renderLista();
   renderPeretu();
   await loadIstoricData();
-  updateWeekBanner();
   hideLoading();
 }
 
 loadAll();
-// Start countdown ticker after page loads
-setInterval(updateWeekBanner, 1000);
+startCountdown();
+
 </script>
 </body>
 </html>
