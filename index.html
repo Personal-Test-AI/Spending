@@ -586,7 +586,7 @@ function addExpense(section) {
   data[section].unshift(newItem);
   renderSection(section);
   renderTabTotals();
-  sb.from('cheltuieli').insert([{{ id: newItem.id, sectiune: section, descriere: desc, suma: amount, categorie: category, data: date }}])
+  sb.from('cheltuieli').insert([{ id: newItem.id, sectiune: section, descriere: desc, suma: amount, categorie: category, data: date }])
     .then(({ error }) => { if (error) console.error('Supabase insert error:', error); });
 
   document.getElementById('desc-' + section).value = '';
@@ -709,10 +709,10 @@ function addListItem() {
 }
 
 function toggleListItem(id) {
-  listaItems = listaItems.map(i => i.id === id ? {{...i, done: !i.done}} : i);
+  listaItems = listaItems.map(i => i.id === id ? {...i, done: !i.done} : i);
   renderLista();
   const updated = listaItems.find(i => i.id === id);
-  sb.from('lista_cumparaturi').update({{ done: updated.done }}).eq('id', id)
+  sb.from('lista_cumparaturi').update({ done: updated.done }).eq('id', id)
     .then(({ error }) => { if (error) console.error(error); });
 }
 
@@ -781,10 +781,10 @@ function addPeretuItem() {
 }
 
 function togglePeretuItem(id) {
-  peretuItems = peretuItems.map(i => i.id === id ? {{...i, done: !i.done}} : i);
+  peretuItems = peretuItems.map(i => i.id === id ? {...i, done: !i.done} : i);
   renderPeretu();
   const updatedP = peretuItems.find(i => i.id === id);
-  sb.from('peretu').update({{ done: updatedP.done }}).eq('id', id)
+  sb.from('peretu').update({ done: updatedP.done }).eq('id', id)
     .then(({ error }) => { if (error) console.error(error); });
 }
 
