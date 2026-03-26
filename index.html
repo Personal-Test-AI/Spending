@@ -705,10 +705,10 @@ function addListItem() {
   const qty = document.getElementById('qty-lista').value.trim();
   const who = document.getElementById('who-lista').value;
   if (!desc) { document.getElementById('desc-lista').style.borderColor='#fa6c9a'; setTimeout(()=>document.getElementById('desc-lista').style.borderColor='',1500); return; }
-  const newL = { id: Date.now(), descriere: desc, cantitate: qty, cine: who, done: false };
+  const newL = { id: Date.now(), desc, qty, who, done: false };
   listaItems.unshift(newL);
   renderLista();
-  sb.from('lista_cumparaturi').insert([newL])
+  sb.from('lista_cumparaturi').insert([{ id: newL.id, descriere: desc, cantitate: qty, cine: who, done: false }])
     .then(({ error }) => { if (error) console.error(error); });
   document.getElementById('desc-lista').value = '';
   document.getElementById('qty-lista').value = '';
@@ -717,8 +717,8 @@ function addListItem() {
 function toggleListItem(id) {
   listaItems = listaItems.map(i => i.id === id ? {...i, done: !i.done} : i);
   renderLista();
-  const updated = listaItems.find(i => i.id === id);
-  sb.from('lista_cumparaturi').update({ done: updated.done }).eq('id', id)
+  const updatedL = listaItems.find(i => i.id === id);
+  sb.from('lista_cumparaturi').update({ done: updatedL.done }).eq('id', id)
     .then(({ error }) => { if (error) console.error(error); });
 }
 
@@ -777,10 +777,10 @@ function addPeretuItem() {
   const qty = document.getElementById('qty-peretu').value.trim();
   const who = document.getElementById('who-peretu').value;
   if (!desc) { document.getElementById('desc-peretu').style.borderColor='#fa6c9a'; setTimeout(()=>document.getElementById('desc-peretu').style.borderColor='',1500); return; }
-  const newP = { id: Date.now(), descriere: desc, cantitate: qty, cine: who, directie: peretuDirection, done: false };
+  const newP = { id: Date.now(), desc, qty, who, dir: peretuDirection, done: false };
   peretuItems.unshift(newP);
   renderPeretu();
-  sb.from('peretu').insert([newP])
+  sb.from('peretu').insert([{ id: newP.id, descriere: desc, cantitate: qty, cine: who, directie: peretuDirection, done: false }])
     .then(({ error }) => { if (error) console.error(error); });
   document.getElementById('desc-peretu').value = '';
   document.getElementById('qty-peretu').value = '';
@@ -789,8 +789,8 @@ function addPeretuItem() {
 function togglePeretuItem(id) {
   peretuItems = peretuItems.map(i => i.id === id ? {...i, done: !i.done} : i);
   renderPeretu();
-  const updatedP = peretuItems.find(i => i.id === id);
-  sb.from('peretu').update({ done: updatedP.done }).eq('id', id)
+  const updP = peretuItems.find(i => i.id === id);
+  sb.from('peretu').update({ done: updP.done }).eq('id', id)
     .then(({ error }) => { if (error) console.error(error); });
 }
 
