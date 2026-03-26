@@ -591,7 +591,7 @@ function addExpense(section) {
   data[section].unshift(newItem);
   renderSection(section);
   renderTabTotals();
-  sb.from('cheltuieli').insert([{ id: newItem.id, sectiune: section, descriere: desc, suma: amount, categorie: category, data: date }])
+  sb.from('cheltuieli').insert([{ id: newItem.id, sectiune: section, descriere: desc, suma: parseFloat(amount), categorie: category, data: date }])
     .then(({ error }) => { if (error) console.error('Supabase insert error:', error); });
 
   document.getElementById('desc-' + section).value = '';
@@ -848,18 +848,24 @@ async function loadAll() {
     if (chData) {
       data = { mario: [], costina: [], together: [] };
       chData.forEach(r => {
-        const item = { id: r.id, desc: r.descriere, amount: parseFloat(r.suma), category: r.categorie, date: r.data };
-        if (data[r.sectiune]) data[r.sectiune].push(item);
+        const item = { 
+          id: r.id, 
+          desc: r.descriere || '', 
+          amount: parseFloat(r.suma) || 0, 
+          category: r.categorie || 'otros', 
+          date: r.data || '' 
+        };
+        if (r.sectiune && data[r.sectiune]) data[r.sectiune].push(item);
       });
     }
 
     // Load lista
     const { data: lData } = await sb.from('lista_cumparaturi').select('*').order('id', { ascending: false });
-    if (lData) listaItems = lData.map(r => ({ id: r.id, desc: r.descriere, qty: r.cantitate, who: r.cine, done: r.done }));
+    if (lData) listaItems = lData.map(r => ({ id: r.id, desc: r.descriere || '', qty: r.cantitate || '', who: r.cine || 'oricare', done: r.done || false }));
 
     // Load peretu
     const { data: pData } = await sb.from('peretu').select('*').order('id', { ascending: false });
-    if (pData) peretuItems = pData.map(r => ({ id: r.id, desc: r.descriere, qty: r.cantitate, who: r.cine, dir: r.directie, done: r.done }));
+    if (pData) peretuItems = pData.map(r => ({ id: r.id, desc: r.descriere || '', qty: r.cantitate || '', who: r.cine || 'amandoi', dir: r.directie || 'buc-per', done: r.done || false }));
 
   } catch(e) {
     console.error('Load error:', e);
