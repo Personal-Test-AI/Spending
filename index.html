@@ -563,7 +563,7 @@ let data = { mario: [], costina: [], together: [] };
 
 // save() replaced by Supabase calls
 
-function fmt(n) { return n.toFixed(2).replace('.', ',') + ' lei'; }
+function fmt(n) { const num = parseFloat(n) || 0; return num.toFixed(2).replace('.', ',') + ' lei'; }
 
 function switchTab(tab) {
   SECTIONS.forEach(s => {
@@ -609,7 +609,7 @@ function deleteExpense(section, id) {
 
 function renderTabTotals() {
   ['mario','costina','together'].forEach(s => {
-    const total = data[s].reduce((a, e) => a + e.amount, 0);
+    const total = data[s].reduce((a, e) => a + (parseFloat(e.amount) || 0), 0);
     document.getElementById('tab-total-' + s).textContent = fmt(total);
   });
 }
@@ -617,7 +617,7 @@ function renderTabTotals() {
 function renderSection(section) {
   const expenses = data[section];
   const color = SECTION_COLOR[section];
-  const total = expenses.reduce((a, e) => a + e.amount, 0);
+  const total = expenses.reduce((a, e) => a + (parseFloat(e.amount) || 0), 0);
 
   document.getElementById('pie-total-' + section).textContent = fmt(total);
   drawPie(section, expenses, total);
