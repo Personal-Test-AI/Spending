@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f0f13">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Spendings 🏠</title>
+<title>Spending 🏠</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -274,6 +274,7 @@
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <div id="loading-overlay" style="display:flex;position:fixed;inset:0;background:rgba(15,15,19,0.92);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
@@ -316,7 +317,7 @@
 </style>
 
 <header>
-  <h1>Spendings</h1>
+  <h1>Spending</h1>
 
 </header>
 
@@ -621,6 +622,19 @@
       </div>
       <button class="btn-close-week" onclick="confirmCloseWeek()">🔒 Închide</button>
     </div>
+    <!-- Grafic lunar -->
+    <div class="card" id="chart-card" style="display:none;">
+      <h2>📊 Evoluție cheltuieli</h2>
+      <div style="position:relative;height:220px;">
+        <canvas id="weeklyChart"></canvas>
+      </div>
+      <div style="display:flex;gap:16px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;border-radius:3px;background:var(--mario);flex-shrink:0;"></div>Mario</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;border-radius:3px;background:var(--costina);flex-shrink:0;"></div>Costina</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><div style="width:12px;height:12px;border-radius:3px;background:var(--together);flex-shrink:0;"></div>Împreună</div>
+      </div>
+    </div>
+
     <!-- Săptămâni arhivate -->
     <div class="card">
       <h2>📁 Săptămâni arhivate</h2>
@@ -901,7 +915,67 @@ async function loadIstoricData() {
   document.getElementById('tab-total-istoric').textContent = sapData ? sapData.length + ' săpt.' : '';
 }
 
+let weeklyChartInstance = null;
+
+function renderChart(saptamani) {
+  if (!saptamani.length) {
+    document.getElementById('chart-card').style.display = 'none';
+    return;
+  }
+  document.getElementById('chart-card').style.display = 'block';
+
+  const labels = saptamani.map((s, i) => {
+    const parts = s.data_start.split(' ');
+    return parts[0] + ' ' + (parts[1] || '');
+  }).reverse();
+
+  const marioData = saptamani.map(s => parseFloat(s.total_mario) || 0).reverse();
+  const costinaData = saptamani.map(s => parseFloat(s.total_costina) || 0).reverse();
+  const togetherData = saptamani.map(s => parseFloat(s.total_together) || 0).reverse();
+
+  if (weeklyChartInstance) weeklyChartInstance.destroy();
+
+  const ctx = document.getElementById('weeklyChart').getContext('2d');
+  weeklyChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Mario', data: marioData, backgroundColor: 'rgba(108,240,194,0.8)', borderRadius: 6, borderSkipped: false },
+        { label: 'Costina', data: costinaData, backgroundColor: 'rgba(250,108,154,0.8)', borderRadius: 6, borderSkipped: false },
+        { label: 'Împreună', data: togetherData, backgroundColor: 'rgba(250,204,108,0.8)', borderRadius: 6, borderSkipped: false },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2).replace('.', ',') + ' lei'
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(46,46,58,0.8)' },
+          ticks: { color: '#7a7a90', font: { size: 11 } }
+        },
+        y: {
+          grid: { color: 'rgba(46,46,58,0.8)' },
+          ticks: {
+            color: '#7a7a90', font: { size: 11 },
+            callback: v => v.toFixed(0) + ' lei'
+          }
+        }
+      }
+    }
+  });
+}
+
 function renderIstoric(saptamani) {
+  renderChart(saptamani);
   const el = document.getElementById('istoric-list');
   if (!saptamani.length) {
     el.innerHTML = '<div class="empty-state">Nu există săptămâni arhivate încă</div>';
