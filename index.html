@@ -244,6 +244,30 @@ canvas { display: block; }
   .form-grid .full { grid-column: 1; }
 }
 </style>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "fbdea3e7-1674-4127-af09-5eb802729883",
+      notifyButton: { enable: false },
+      promptOptions: {
+        slidedown: {
+          prompts: [{
+            type: "push",
+            autoPrompt: true,
+            text: {
+              actionMessage: "Spendings vrea să îți trimită notificări când se apropie închiderea săptămânii.",
+              acceptButton: "Da, vreau!",
+              cancelButton: "Mai târziu"
+            },
+            delay: { pageViews: 1, timeDelay: 5 }
+          }]
+        }
+      }
+    });
+  });
+</script>
 </head>
 <body>
 
