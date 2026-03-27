@@ -1,0 +1,22 @@
+{
+  "name": "Spending",
+  "short_name": "Spending",
+  "description": "Cheltuieli casă - Mario & Costina",
+  "start_url": "/Spending/",
+  "display": "standalone",
+  "background_color": "#0f0f13",
+  "theme_color": "#0f0f13",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Money%20bag/3D/money_bag_3d.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/Money%20bag/3D/money_bag_3d.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
