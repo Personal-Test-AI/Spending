@@ -4,344 +4,922 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f0f13">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Spendings">
 <link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Spending">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Spending 🏠</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/assets/72x72/1f3e0.png">
+<title>Spendings 🏠</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg: #0f0f13;
-    --surface: #18181f;
-    --surface2: #22222c;
-    --border: #2e2e3a;
-    --text: #f0f0f5;
-    --text-muted: #7a7a90;
-    --costina: #fa6c9a;
-    --mario: #6cf0c2;
-    --together: #facc6c;
-    --lista: #60c5fa;
-    --peretu: #b8fa6c;
-  }
+:root {
+  --bg: #0f0f13;
+  --surface: #18181f;
+  --surface2: #22222c;
+  --border: #2e2e3a;
+  --text: #f0f0f5;
+  --muted: #7a7a90;
+  --mario: #6cf0c2;
+  --costina: #fa6c9a;
+  --together: #facc6c;
+  --lista: #60c5fa;
+  --peretu: #b8fa6c;
+  --istoric: #a78bfa;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 24px 16px 60px;
-  }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 20px 14px 110px;
+}
 
-  header { text-align: center; margin-bottom: 28px; }
+header { text-align: center; margin-bottom: 20px; }
 
-  header h1 {
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(26px, 6vw, 44px);
-    font-weight: 800;
-    letter-spacing: -1px;
-    background: linear-gradient(135deg, var(--mario), var(--costina), var(--together));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+header h1 {
+  font-size: clamp(28px, 7vw, 48px);
+  font-weight: 900;
+  letter-spacing: -2px;
+  background: linear-gradient(135deg, var(--mario), var(--costina), var(--together));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-  header p { color: var(--text-muted); margin-top: 6px; font-size: 14px; }
+.container { max-width: 860px; margin: 0 auto; }
 
-  .container { max-width: 860px; margin: 0 auto; }
+/* TABS */
+.tabs {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 6px 4px 20px;
+  z-index: 100;
+  display: flex;
+  gap: 3px;
+}
 
-  /* TABS */
-  .tabs {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 10px;
-    margin-bottom: 24px;
-  }
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 8px 2px;
+  text-align: center;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
 
-  .tab-btn {
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: 16px;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    padding: 14px 10px;
-    text-align: center;
-    transition: all 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-  }
+.tab-btn .ti { font-size: 18px; }
+.tab-btn .tn { font-size: 10px; }
+.tab-btn .tt { font-size: 9px; font-weight: 600; }
 
-  .tab-btn .tab-icon { font-size: 22px; }
-  .tab-btn .tab-name { font-size: 14px; }
-  .tab-btn .tab-total { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+.tab-btn.active-mario    { border-color: var(--mario);    color: var(--mario);    background: rgba(108,240,194,0.08); }
+.tab-btn.active-costina  { border-color: var(--costina);  color: var(--costina);  background: rgba(250,108,154,0.08); }
+.tab-btn.active-together { border-color: var(--together); color: var(--together); background: rgba(250,204,108,0.08); }
+.tab-btn.active-lista    { border-color: var(--lista);    color: var(--lista);    background: rgba(96,197,250,0.08); }
+.tab-btn.active-peretu   { border-color: var(--peretu);   color: var(--peretu);   background: rgba(184,250,108,0.08); }
+.tab-btn.active-istoric  { border-color: var(--istoric);  color: var(--istoric);  background: rgba(167,139,250,0.08); }
 
-  .tab-btn.active-mario    { border-color: var(--mario);    color: var(--mario);    background: rgba(108,240,194,0.07); }
-  .tab-btn.active-costina  { border-color: var(--costina);  color: var(--costina);  background: rgba(250,108,154,0.07); }
-  .tab-btn.active-together { border-color: var(--together); color: var(--together); background: rgba(250,204,108,0.07); }
-  .tab-btn.active-mario    .tab-total { color: var(--mario); }
-  .tab-btn.active-costina  .tab-total { color: var(--costina); }
-  .tab-btn.active-together .tab-total { color: var(--together); }
-  .tab-btn.active-lista    { border-color: var(--lista);    color: var(--lista);    background: rgba(96,197,250,0.07); }
-  .tab-btn.active-lista    .tab-total { color: var(--lista); }
-  .tab-btn.active-peretu   { border-color: var(--peretu);   color: var(--peretu);   background: rgba(184,250,108,0.07); }
-  .tab-btn.active-peretu   .tab-total { color: var(--peretu); }
-  .tab-btn.active-istoric  { border-color: #a78bfa; color: #a78bfa; background: rgba(167,139,250,0.07); }
-  .tab-btn.active-istoric  .tab-total { color: #a78bfa; }
+/* PANELS */
+.panel { display: none; }
+.panel.active { display: grid; gap: 16px; }
 
-  /* PANELS */
-  .panel { display: none; }
-  .panel.active { display: grid; gap: 20px; }
+/* CARD */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+}
 
-  /* CARD */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 24px;
-  }
+.card h2 {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
 
-  .card h2 {
-    font-family: 'Inter', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 18px;
-  }
+/* FORM */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-grid .full { grid-column: 1 / -1; }
 
-  /* FORM */
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .form-grid .full { grid-column: 1 / -1; }
+label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
 
-  label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; font-weight: 500; }
+input, select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+input:focus, select:focus { border-color: #7c6cfa; }
+select option { background: var(--surface2); }
 
-  input, select {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    padding: 10px 14px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
+.btn {
+  width: 100%; border: none; border-radius: 12px;
+  font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700;
+  padding: 13px; cursor: pointer; color: #0a0a0d;
+  transition: opacity 0.2s, transform 0.1s; margin-top: 4px;
+}
+.btn:active { transform: scale(0.98); opacity: 0.85; }
+.btn-mario    { background: var(--mario); }
+.btn-costina  { background: var(--costina); }
+.btn-together { background: var(--together); }
+.btn-lista    { background: var(--lista); }
+.btn-peretu   { background: var(--peretu); }
 
-  input:focus, select:focus { border-color: #7c6cfa; }
-  select option { background: var(--surface2); }
+/* VISUAL ROW */
+.visual-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-  .btn-add {
-    width: 100%; border: none; border-radius: 12px;
-    color: #0a0a0d;
-    font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700;
-    padding: 13px; cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s; margin-top: 4px;
-  }
-  .btn-add:hover { opacity: 0.88; transform: translateY(-1px); }
-  .btn-add:active { transform: translateY(0); }
-  .btn-mario    { background: var(--mario); }
-  .btn-costina  { background: var(--costina); }
-  .btn-together { background: var(--together); }
+canvas { display: block; }
 
-  /* VISUAL ROW */
-  .visual-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.chart-wrap {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.chart-total {
+  position: absolute; text-align: center; pointer-events: none;
+}
+.chart-total .lbl { font-size: 10px; color: var(--muted); display: block; }
+.chart-total .val { font-size: 16px; font-weight: 800; display: block; }
 
-  canvas { display: block; }
+/* CATS */
+.cat-list { display: flex; flex-direction: column; gap: 8px; }
+.cat-row { display: flex; align-items: center; gap: 8px; }
+.cat-icon { font-size: 16px; width: 32px; height: 32px; border-radius: 8px; background: var(--surface2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.cat-info { flex: 1; }
+.cat-info .cat-name { font-size: 12px; font-weight: 500; }
+.cat-info .cat-bar-wrap { height: 4px; background: var(--border); border-radius: 999px; margin-top: 3px; }
+.cat-info .cat-bar { height: 4px; border-radius: 999px; transition: width 0.4s; }
+.cat-amount { font-size: 12px; font-weight: 700; white-space: nowrap; }
 
-  .chart-wrap {
-    position: relative;
-    display: flex; align-items: center; justify-content: center; flex-direction: column;
-  }
+/* TRANSACTIONS */
+.txn-list { display: flex; flex-direction: column; gap: 6px; }
+.txn-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface2); border-radius: 12px; padding: 10px 12px;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+.txn-icon { font-size: 18px; width: 34px; height: 34px; background: var(--surface); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.txn-info { flex: 1; min-width: 0; }
+.txn-info .txn-desc { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.txn-info .txn-meta { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.txn-right { text-align: right; flex-shrink: 0; }
+.txn-amount { font-size: 14px; font-weight: 700; }
+.txn-badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 20px; margin-top: 2px; }
+.btn-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 15px; padding: 4px; border-radius: 6px; transition: color 0.2s; flex-shrink: 0; }
+.btn-del:active { color: var(--costina); }
 
-  .chart-total { position: absolute; text-align: center; pointer-events: none; }
-  .chart-total span { display: block; font-family: 'Inter', sans-serif; }
-  .chart-total .lbl { font-size: 11px; color: var(--text-muted); }
-  .chart-total .val { font-size: 18px; font-weight: 800; color: var(--text); }
+.empty-state { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 0; }
 
-  /* CATEGORIES */
-  .cat-list { display: flex; flex-direction: column; gap: 10px; }
-  .cat-row { display: flex; align-items: center; gap: 10px; }
-  .cat-icon {
-    font-size: 18px; width: 34px; height: 34px;
-    border-radius: 8px; background: var(--surface2);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .cat-info { flex: 1; }
-  .cat-info .cat-name { font-size: 13px; font-weight: 500; }
-  .cat-info .cat-bar-wrap { height: 5px; background: var(--border); border-radius: 999px; margin-top: 4px; }
-  .cat-info .cat-bar { height: 5px; border-radius: 999px; transition: width 0.4s ease; }
-  .cat-amount { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; white-space: nowrap; }
+/* WEEK BANNER */
+.week-banner {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.week-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.week-icon { width: 40px; height: 40px; border-radius: 11px; background: linear-gradient(135deg, rgba(108,240,194,0.15), rgba(250,204,108,0.15)); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.week-info { flex: 1; min-width: 0; }
+.week-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.week-dates { font-size: 13px; font-weight: 700; margin-top: 2px; }
+.week-day { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.btn-close {
+  background: linear-gradient(135deg, var(--costina), var(--together));
+  border: none; border-radius: 10px; color: #0a0a0d;
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700;
+  padding: 9px 12px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+}
 
-  /* TRANSACTIONS */
-  .txn-list { display: flex; flex-direction: column; gap: 8px; }
+/* SAP CARDS */
+.sap-card { background: var(--surface2); border-radius: 14px; padding: 14px; margin-bottom: 8px; }
+.sap-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.sap-dates { font-size: 13px; font-weight: 700; }
+.sap-totals { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+.sap-total-item { font-size: 11px; }
+.sap-total-item span { font-weight: 700; }
+.sap-detail { display: none; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+.sap-detail.open { display: block; }
+.sap-arrow { font-size: 16px; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; margin-left: 8px; }
 
-  .txn-item {
-    display: flex; align-items: center; gap: 12px;
-    background: var(--surface2); border-radius: 12px;
-    padding: 12px 14px;
-    animation: fadeIn 0.3s ease;
-  }
+/* DIR BTNS */
+.dir-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.dir-btn { font-size: 12px !important; padding: 11px 6px !important; }
 
-  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+/* LOADING */
+#loading-overlay { display:flex; position:fixed; inset:0; background:rgba(15,15,19,0.9); z-index:999; align-items:center; justify-content:center; flex-direction:column; gap:12px; }
+.spinner { width:38px; height:38px; border:3px solid var(--border); border-top-color:var(--mario); border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
 
-  .txn-icon {
-    font-size: 20px; width: 38px; height: 38px;
-    background: var(--surface); border-radius: 10px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-
-  .txn-info { flex: 1; min-width: 0; }
-  .txn-info .txn-desc { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .txn-info .txn-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-  .txn-right { text-align: right; flex-shrink: 0; }
-  .txn-amount { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 15px; }
-
-  .txn-badge {
-    display: inline-block; font-size: 11px; font-weight: 600;
-    padding: 2px 7px; border-radius: 20px; margin-top: 3px;
-  }
-  .badge-mario    { background: rgba(108,240,194,0.15); color: var(--mario); }
-  .badge-costina  { background: rgba(250,108,154,0.15); color: var(--costina); }
-  .badge-together { background: rgba(250,204,108,0.15); color: var(--together); }
-
-  .btn-del {
-    background: none; border: none; color: var(--text-muted);
-    cursor: pointer; font-size: 16px; padding: 4px;
-    border-radius: 6px; transition: color 0.2s; flex-shrink: 0;
-  }
-  .btn-del:hover { color: #fa6c9a; }
-
-  .empty-state { text-align: center; color: var(--text-muted); font-size: 14px; padding: 28px 0; }
-
-  .sap-card { background: var(--surface2); border-radius: 14px; padding: 16px; margin-bottom: 10px; }
-  .sap-dates { font-size: 13px; font-weight: 700; color: var(--text); font-family: Inter, sans-serif; }
-  .sap-totals { display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
-  .sap-total-item { font-size: 12px; }
-  .sap-total-item span { font-weight: 700; }
-  .sap-detail { display: none; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
-  .sap-detail.open { display: block; }
-
-  @media (max-width: 600px) {
-    .visual-row { grid-template-columns: 1fr; }
-    .form-grid { grid-template-columns: 1fr; }
-    .form-grid .full { grid-column: 1; }
-    .tabs { grid-template-columns: repeat(5, 1fr); gap: 6px; }
-    .tab-btn { font-size: 11px; padding: 8px 4px; }
-    .tab-btn .tab-icon { font-size: 16px; }
-    .tab-btn .tab-name { font-size: 11px; }
-    .tab-btn .tab-total { font-size: 10px; }
-  }
-
-  /* ── WEEK BANNER ── */
-  .week-banner {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 16px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  .week-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
-  .week-icon {
-    width: 44px; height: 44px; border-radius: 12px;
-    background: linear-gradient(135deg, rgba(108,240,194,0.15), rgba(250,204,108,0.15));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; flex-shrink: 0;
-  }
-  .week-info { flex: 1; min-width: 0; }
-  .week-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.2px; font-family: Inter, sans-serif; font-weight: 700; }
-  .week-dates { font-size: 13px; font-weight: 700; color: var(--text); margin-top: 2px; font-family: Inter, sans-serif; }
-  .week-day { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .btn-close-week {
-    background: linear-gradient(135deg, #fa6c9a, #facc6c);
-    border: none; border-radius: 12px; color: #0a0a0d;
-    font-family: Inter, sans-serif; font-size: 12px; font-weight: 700;
-    padding: 10px 14px; cursor: pointer; white-space: nowrap;
-    transition: opacity 0.2s; flex-shrink: 0;
-  }
-  .btn-close-week:hover { opacity: 0.85; }
-
+@media (max-width: 400px) {
+  .tab-btn .tn { font-size: 9px; }
+  .visual-row { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-grid .full { grid-column: 1; }
+}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-// ── PWA & NOTIFICĂRI ──
-async function initPWA() {
-  // Register service worker
-  if ('serviceWorker' in navigator) {
-    try {
-      await navigator.serviceWorker.register('sw.js');
-      console.log('Service Worker registered');
-    } catch(e) {
-      console.log('SW registration failed:', e);
-    }
-  }
+</head>
+<body>
 
-  // Request notification permission
-  if ('Notification' in window && Notification.permission === 'default') {
-    setTimeout(async () => {
-      const perm = await Notification.requestPermission();
-      if (perm === 'granted') {
-        scheduleWeekEndNotification();
-      }
-    }, 3000); // Ask after 3 seconds
-  } else if (Notification.permission === 'granted') {
-    scheduleWeekEndNotification();
-  }
-}
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div style="color:var(--muted);font-size:13px;">Se încarcă...</div>
+</div>
 
-function scheduleWeekEndNotification() {
-  if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
+<header>
+  <h1>Spending</h1>
+</header>
 
-  const end = getWeekEnd();
-  const alertTime = new Date(end.getTime() - 10 * 60 * 60 * 1000); // 10h before
+<div class="container">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active-mario" id="tab-btn-mario" onclick="switchTab('mario')">
+      <span class="ti">🧔</span><span class="tn">Mario</span><span class="tt" id="tab-total-mario">0 lei</span>
+    </button>
+    <button class="tab-btn" id="tab-btn-costina" onclick="switchTab('costina')">
+      <span class="ti">👩</span><span class="tn">Costina</span><span class="tt" id="tab-total-costina">0 lei</span>
+    </button>
+    <button class="tab-btn" id="tab-btn-together" onclick="switchTab('together')">
+      <span class="ti">🏠</span><span class="tn">Împreună</span><span class="tt" id="tab-total-together">0 lei</span>
+    </button>
+    <button class="tab-btn" id="tab-btn-lista" onclick="switchTab('lista')">
+      <span class="ti">🛒</span><span class="tn">Cumpărături</span><span class="tt" id="tab-total-lista"> </span>
+    </button>
+    <button class="tab-btn" id="tab-btn-peretu" onclick="switchTab('peretu')">
+      <span class="ti">🚗</span><span class="tn">Peretu</span><span class="tt" id="tab-total-peretu"> </span>
+    </button>
+    <button class="tab-btn" id="tab-btn-istoric" onclick="switchTab('istoric')">
+      <span class="ti">📅</span><span class="tn">Istoric</span><span class="tt" id="tab-total-istoric"> </span>
+    </button>
+  </div>
+
+  <!-- PANEL MARIO -->
+  <div class="panel active" id="panel-mario">
+    <div class="card">
+      <h2>🧔 Cheltuieli Mario</h2>
+      <div class="form-grid">
+        <div class="full"><label>Descriere</label><input type="text" id="desc-mario" placeholder="Ex: Combustibil, mâncare..."/></div>
+        <div><label>Sumă (lei)</label><input type="number" id="amount-mario" placeholder="0.00" min="0" step="0.01"/></div>
+        <div><label>Categorie</label>
+          <select id="category-mario">
+            <option value="comida">🛒 Cumpărături Casă</option>
+            <option value="fastfood">🍔 FastFood</option>
+            <option value="heets">🚬 Heets</option>
+            <option value="suministros">💡 Utilități</option>
+            <option value="transporte">🚌 Transport</option>
+            <option value="salidas">🍻 Ieșiri</option>
+            <option value="otros">📦 Altele</option>
+          </select>
+        </div>
+        <div><label>Data</label><input type="date" id="date-mario"/></div>
+        <div class="full"><button class="btn btn-mario" onclick="addExpense('mario')">+ Adaugă cheltuială Mario</button></div>
+      </div>
+    </div>
+    <div class="visual-row">
+      <div class="card">
+        <h2>Rezumat Mario</h2>
+        <div class="chart-wrap" style="height:170px;">
+          <canvas id="pie-mario" width="170" height="170"></canvas>
+          <div class="chart-total"><span class="lbl">Total</span><span class="val" id="pie-total-mario">0 lei</span></div>
+        </div>
+      </div>
+      <div class="card"><h2>Pe categorie</h2><div class="cat-list" id="cats-mario"><div class="empty-state">Nimic încă</div></div></div>
+    </div>
+    <div class="card"><h2>Istoric Mario</h2><div class="txn-list" id="txns-mario"><div class="empty-state">Nu există cheltuieli 👀</div></div></div>
+  </div>
+
+  <!-- PANEL COSTINA -->
+  <div class="panel" id="panel-costina">
+    <div class="card">
+      <h2>👩 Cheltuieli Costina</h2>
+      <div class="form-grid">
+        <div class="full"><label>Descriere</label><input type="text" id="desc-costina" placeholder="Ex: Cumpărături, cosmetice..."/></div>
+        <div><label>Sumă (lei)</label><input type="number" id="amount-costina" placeholder="0.00" min="0" step="0.01"/></div>
+        <div><label>Categorie</label>
+          <select id="category-costina">
+            <option value="comida">🛒 Cumpărături Casă</option>
+            <option value="fastfood">🍔 FastFood</option>
+            <option value="heets">🚬 Heets</option>
+            <option value="suministros">💡 Utilități</option>
+            <option value="transporte">🚌 Transport</option>
+            <option value="salidas">🍻 Ieșiri</option>
+            <option value="otros">📦 Altele</option>
+          </select>
+        </div>
+        <div><label>Data</label><input type="date" id="date-costina"/></div>
+        <div class="full"><button class="btn btn-costina" onclick="addExpense('costina')">+ Adaugă cheltuială Costina</button></div>
+      </div>
+    </div>
+    <div class="visual-row">
+      <div class="card">
+        <h2>Rezumat Costina</h2>
+        <div class="chart-wrap" style="height:170px;">
+          <canvas id="pie-costina" width="170" height="170"></canvas>
+          <div class="chart-total"><span class="lbl">Total</span><span class="val" id="pie-total-costina">0 lei</span></div>
+        </div>
+      </div>
+      <div class="card"><h2>Pe categorie</h2><div class="cat-list" id="cats-costina"><div class="empty-state">Nimic încă</div></div></div>
+    </div>
+    <div class="card"><h2>Istoric Costina</h2><div class="txn-list" id="txns-costina"><div class="empty-state">Nu există cheltuieli 👀</div></div></div>
+  </div>
+
+  <!-- PANEL ÎMPREUNĂ -->
+  <div class="panel" id="panel-together">
+    <div class="card">
+      <h2>🏠 Cheltuieli Comune</h2>
+      <div class="form-grid">
+        <div class="full"><label>Descriere</label><input type="text" id="desc-together" placeholder="Ex: Chirie, facturi..."/></div>
+        <div><label>Sumă (lei)</label><input type="number" id="amount-together" placeholder="0.00" min="0" step="0.01"/></div>
+        <div><label>Categorie</label>
+          <select id="category-together">
+            <option value="comida">🛒 Cumpărături Casă</option>
+            <option value="fastfood">🍔 FastFood</option>
+            <option value="suministros">💡 Utilități</option>
+            <option value="transporte">🚌 Transport</option>
+            <option value="salidas">🍻 Ieșiri</option>
+            <option value="otros">📦 Altele</option>
+          </select>
+        </div>
+        <div><label>Data</label><input type="date" id="date-together"/></div>
+        <div class="full"><button class="btn btn-together" onclick="addExpense('together')">+ Adaugă cheltuială comună</button></div>
+      </div>
+    </div>
+    <div class="visual-row">
+      <div class="card">
+        <h2>Rezumat comun</h2>
+        <div class="chart-wrap" style="height:170px;">
+          <canvas id="pie-together" width="170" height="170"></canvas>
+          <div class="chart-total"><span class="lbl">Total</span><span class="val" id="pie-total-together">0 lei</span></div>
+        </div>
+      </div>
+      <div class="card"><h2>Pe categorie</h2><div class="cat-list" id="cats-together"><div class="empty-state">Nimic încă</div></div></div>
+    </div>
+    <div class="card"><h2>Istoric comun</h2><div class="txn-list" id="txns-together"><div class="empty-state">Nu există cheltuieli 👀</div></div></div>
+  </div>
+
+  <!-- PANEL CUMPĂRĂTURI -->
+  <div class="panel" id="panel-lista">
+    <div class="card">
+      <h2>🛒 Listă Cumpărături</h2>
+      <div class="form-grid">
+        <div class="full"><label>Produs</label><input type="text" id="desc-lista" placeholder="Ex: Lapte, pâine..."/></div>
+        <div><label>Cantitate</label><input type="text" id="qty-lista" placeholder="Ex: 2 buc, 1 kg"/></div>
+        <div><label>Cine cumpără</label>
+          <select id="who-lista">
+            <option value="mario">🧔 Mario</option>
+            <option value="costina">👩 Costina</option>
+            <option value="oricare">👥 Oricare</option>
+          </select>
+        </div>
+        <div class="full"><button class="btn btn-lista" onclick="addListItem()">+ Adaugă în listă</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Lista activă <span id="lista-count" style="color:var(--lista)"></span></h2>
+      <div id="lista-items"><div class="empty-state">Lista e goală 🛒</div></div>
+    </div>
+    <div class="card"><h2>✅ Cumpărate</h2><div id="lista-done"><div class="empty-state">Nimic cumpărat încă</div></div></div>
+  </div>
+
+  <!-- PANEL PERETU -->
+  <div class="panel" id="panel-peretu">
+    <div class="card">
+      <h2>🚗 Peretu ↔ București</h2>
+      <div class="dir-btns">
+        <button class="btn dir-btn btn-peretu" onclick="setDirection('buc-per')">📦 București → Peretu</button>
+        <button class="btn dir-btn" style="background:#fa9c6c;" onclick="setDirection('per-buc')">🏙️ Peretu → București</button>
+      </div>
+      <div id="peretu-dir-label" style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:12px;">Selectează direcția mai sus</div>
+      <div class="form-grid">
+        <div class="full"><label>Ce luăm</label><input type="text" id="desc-peretu" placeholder="Ex: Conserve, haine..."/></div>
+        <div><label>Cantitate</label><input type="text" id="qty-peretu" placeholder="Ex: 3 borcane"/></div>
+        <div><label>Cine se ocupă</label>
+          <select id="who-peretu">
+            <option value="mario">🧔 Mario</option>
+            <option value="costina">👩 Costina</option>
+            <option value="amandoi">👥 Amândoi</option>
+          </select>
+        </div>
+        <div class="full"><button class="btn btn-peretu" onclick="addPeretuItem()">+ Adaugă în listă Peretu</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>📦 București → Peretu <span id="count-buc-per" style="color:var(--peretu)"></span></h2>
+      <div id="peretu-buc-per"><div class="empty-state">Nimic de dus 🏡</div></div>
+    </div>
+    <div class="card">
+      <h2>🏙️ Peretu → București <span id="count-per-buc" style="color:#fa9c6c"></span></h2>
+      <div id="peretu-per-buc"><div class="empty-state">Nimic de adus 🏙️</div></div>
+    </div>
+    <div class="card"><h2>✅ Transportate</h2><div id="peretu-done"><div class="empty-state">Nimic transportat încă</div></div></div>
+  </div>
+
+  <!-- PANEL ISTORIC -->
+  <div class="panel" id="panel-istoric">
+    <div class="week-banner">
+      <div class="week-left">
+        <div class="week-icon">📅</div>
+        <div class="week-info">
+          <div class="week-label">Săptămâna activă</div>
+          <div class="week-dates" id="week-dates">—</div>
+          <div class="week-day" id="week-day">—</div>
+        </div>
+      </div>
+      <button class="btn-close" onclick="confirmCloseWeek()">🔒 Închide</button>
+    </div>
+    <div class="card" id="chart-card" style="display:none;">
+      <h2>📊 Evoluție cheltuieli</h2>
+      <div style="position:relative;height:200px;"><canvas id="weeklyChart"></canvas></div>
+      <div style="display:flex;gap:14px;justify-content:center;margin-top:10px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;"><div style="width:10px;height:10px;border-radius:3px;background:var(--mario)"></div>Mario</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;"><div style="width:10px;height:10px;border-radius:3px;background:var(--costina)"></div>Costina</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;"><div style="width:10px;height:10px;border-radius:3px;background:var(--together)"></div>Împreună</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>📁 Săptămâni arhivate</h2>
+      <div id="istoric-list"><div class="empty-state">Nu există săptămâni arhivate încă</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SB_URL = 'https://lkzqjvoxmjajtrrwneuw.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxrenFqdm94bWphanRycnduZXV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjY5MTUsImV4cCI6MjA4OTQwMjkxNX0.B5vywaZqBByQWD6sC6Lfms8e0qpkdWM4ueFLruDlwc0';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+const CAT_META = {
+  comida:      { icon: '🛒', color: '#7c6cfa' },
+  fastfood:    { icon: '🍔', color: '#ff8c42' },
+  heets:       { icon: '🚬', color: '#a8a8b3' },
+  suministros: { icon: '💡', color: '#6cf0c2' },
+  transporte:  { icon: '🚌', color: '#facc6c' },
+  salidas:     { icon: '🍻', color: '#fa9c6c' },
+  otros:       { icon: '📦', color: '#8a8a8a' },
+};
+
+const CAT_NAMES = {
+  comida: 'Cumpărături Casă', fastfood: 'FastFood', heets: 'Heets',
+  suministros: 'Utilități', transporte: 'Transport', salidas: 'Ieșiri', otros: 'Altele'
+};
+
+const SECTION_COLOR = { mario: '#6cf0c2', costina: '#fa6c9a', together: '#facc6c' };
+const SECTIONS = ['mario', 'costina', 'together', 'lista', 'peretu', 'istoric'];
+
+let data = { mario: [], costina: [], together: [] };
+let listaItems = [];
+let peretuItems = [];
+let peretuDir = 'buc-per';
+let weeklyChartInstance = null;
+
+// Init dates
+['mario','costina','together'].forEach(s => {
+  const el = document.getElementById('date-' + s);
+  if (el) el.valueAsDate = new Date();
+});
+
+// UTILS
+function fmt(n) { return (parseFloat(n)||0).toFixed(2).replace('.', ',') + ' lei'; }
+function fmtDate(d) { return d.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', year: 'numeric' }); }
+
+// WEEK
+function getWeekStart() {
   const now = new Date();
-  const delay = alertTime - now;
+  const day = now.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+function getWeekEnd() {
+  const monday = getWeekStart();
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(22, 30, 0, 0);
+  return sunday;
+}
+function updateWeekBanner() {
+  const start = getWeekStart();
+  const end = getWeekEnd();
+  const now = new Date();
+  const wDates = document.getElementById('week-dates');
+  const wDay = document.getElementById('week-day');
+  if (wDates) wDates.textContent = fmtDate(start) + ' → ' + fmtDate(end);
+  const days = ['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
+  const timeLeft = end - now;
+  if (timeLeft > 0) {
+    const daysLeft = Math.floor(timeLeft / (1000*60*60*24));
+    const hoursLeft = Math.floor((timeLeft % (1000*60*60*24)) / (1000*60*60));
+    if (wDay) wDay.textContent = days[now.getDay()] + ' · ' + (daysLeft > 0 ? daysLeft + 'z ' : '') + hoursLeft + 'h până la închidere';
+  } else {
+    if (wDay) { wDay.textContent = '⚠️ Săptămâna a expirat!'; wDay.style.color = '#fa6c9a'; }
+  }
+}
 
-  if (delay > 0) {
-    navigator.serviceWorker.controller.postMessage({
-      type: 'SCHEDULE_NOTIFICATION',
-      title: '⚠️ Spending — Săptămâna se închide!',
-      body: 'Mai sunt 10 ore până la închiderea săptămânii. Nu uita să înregistrezi cheltuielile!',
-      delay
+// TABS
+function switchTab(tab) {
+  SECTIONS.forEach(s => {
+    document.getElementById('panel-' + s).classList.toggle('active', s === tab);
+    const btn = document.getElementById('tab-btn-' + s);
+    btn.className = 'tab-btn' + (s === tab ? ' active-' + s : '');
+  });
+}
+
+// EXPENSES
+function addExpense(section) {
+  const desc = document.getElementById('desc-' + section).value.trim();
+  const amount = parseFloat(document.getElementById('amount-' + section).value);
+  const category = document.getElementById('category-' + section).value;
+  const date = document.getElementById('date-' + section).value;
+  if (!desc || isNaN(amount) || amount <= 0) {
+    ['desc-','amount-'].forEach(p => {
+      const el = document.getElementById(p + section);
+      el.style.borderColor = '#fa6c9a';
+      setTimeout(() => el.style.borderColor = '', 1500);
     });
-    console.log('Notificare programată în ' + Math.round(delay/1000/60) + ' minute');
+    return;
   }
+  const newId = Date.now();
+  const localItem = { id: newId, desc, amount: parseFloat(amount), category, date };
+  data[section].unshift(localItem);
+  renderSection(section);
+  renderTabTotals();
+  document.getElementById('desc-' + section).value = '';
+  document.getElementById('amount-' + section).value = '';
+  document.getElementById('date-' + section).valueAsDate = new Date();
+  sb.from('cheltuieli').insert([{ id: newId, sectiune: section, descriere: desc, suma: parseFloat(amount), categorie: category, data: date }])
+    .then(({ error }) => { if (error) console.error(error); });
 }
 
-// Show install prompt for iOS
-function showInstallTip() {
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-  const shown = localStorage.getItem('install_tip_shown');
-
-  if (isIOS && !isStandalone && !shown) {
-    setTimeout(() => {
-      const tip = document.createElement('div');
-      tip.style.cssText = 'position:fixed;bottom:90px;left:16px;right:16px;background:#18181f;border:1px solid #2e2e3a;border-radius:16px;padding:14px 16px;z-index:999;display:flex;align-items:center;gap:12px;animation:fadeIn 0.3s ease;';
-      tip.innerHTML = `<span style="font-size:22px">📲</span><div style="flex:1;font-size:13px;color:#f0f0f5;">Adaugă pe ecranul principal: apasă <strong>□↑</strong> apoi <strong>"Adaugă pe ecran"</strong></div><button onclick="this.parentElement.remove();localStorage.setItem('install_tip_shown','1')" style="background:none;border:none;color:#7a7a90;font-size:18px;cursor:pointer;">✕</button>`;
-      document.body.appendChild(tip);
-      setTimeout(() => tip.remove(), 8000);
-      localStorage.setItem('install_tip_shown', '1');
-    }, 2000);
-  }
+function deleteExpense(section, id) {
+  data[section] = data[section].filter(e => e.id !== id);
+  renderSection(section);
+  renderTabTotals();
+  sb.from('cheltuieli').delete().eq('id', id).then(({ error }) => { if (error) console.error(error); });
 }
 
-initPWA();
-showInstallTip();
+function renderTabTotals() {
+  ['mario','costina','together'].forEach(s => {
+    const total = data[s].reduce((a, e) => a + (parseFloat(e.amount)||0), 0);
+    document.getElementById('tab-total-' + s).textContent = fmt(total);
+  });
+}
+
+function renderSection(section) {
+  const expenses = data[section];
+  const color = SECTION_COLOR[section];
+  const total = expenses.reduce((a, e) => a + (parseFloat(e.amount)||0), 0);
+  document.getElementById('pie-total-' + section).textContent = fmt(total);
+  drawPie(section, expenses, total);
+  const cats = {};
+  expenses.forEach(e => { cats[e.category] = (cats[e.category]||0) + (parseFloat(e.amount)||0); });
+  renderCats('cats-' + section, cats, total, color);
+  renderTxns('txns-' + section, section, expenses, color);
+}
+
+function drawPie(section, expenses, total) {
+  const canvas = document.getElementById('pie-' + section);
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const cx = W/2, cy = H/2, r = 62, line = 18;
+  ctx.strokeStyle = '#2e2e3a'; ctx.lineWidth = line; ctx.lineCap = 'butt';
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+  if (!total) return;
+  const cats = {};
+  expenses.forEach(e => { cats[e.category] = (cats[e.category]||0) + (parseFloat(e.amount)||0); });
+  const sorted = Object.entries(cats).sort((a,b) => b[1]-a[1]);
+  let startAngle = -Math.PI/2;
+  sorted.forEach(([cat, amt]) => {
+    const sweep = (amt/total) * Math.PI * 2;
+    ctx.strokeStyle = (CAT_META[cat]||{color:'#8a8a8a'}).color;
+    ctx.lineWidth = line;
+    ctx.lineCap = sorted.length === 1 ? 'butt' : 'round';
+    ctx.beginPath(); ctx.arc(cx, cy, r, startAngle, startAngle+sweep); ctx.stroke();
+    startAngle += sweep;
+  });
+}
+
+function renderCats(elId, cats, total, color) {
+  const el = document.getElementById(elId);
+  if (!Object.keys(cats).length) { el.innerHTML = '<div class="empty-state">Nicio cheltuială încă</div>'; return; }
+  el.innerHTML = Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([cat, amt]) => {
+    const meta = CAT_META[cat] || { icon:'📦', color };
+    const pct = total > 0 ? (amt/total*100).toFixed(0) : 0;
+    return `<div class="cat-row">
+      <div class="cat-icon">${meta.icon}</div>
+      <div class="cat-info">
+        <div class="cat-name">${CAT_NAMES[cat]||cat}</div>
+        <div class="cat-bar-wrap"><div class="cat-bar" style="width:${pct}%;background:${meta.color}"></div></div>
+      </div>
+      <div class="cat-amount" style="color:${meta.color}">${fmt(amt)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTxns(elId, section, expenses, color) {
+  const el = document.getElementById(elId);
+  if (!expenses.length) { el.innerHTML = '<div class="empty-state">Nu există cheltuieli 👀</div>'; return; }
+  const labels = { mario:'Mario', costina:'Costina', together:'Împreună' };
+  el.innerHTML = expenses.map(e => {
+    const meta = CAT_META[e.category] || { icon:'📦' };
+    const dateStr = e.date ? new Date(e.date+'T12:00:00').toLocaleDateString('ro-RO',{day:'numeric',month:'short'}) : '';
+    return `<div class="txn-item">
+      <div class="txn-icon">${meta.icon}</div>
+      <div class="txn-info">
+        <div class="txn-desc">${e.desc}</div>
+        <div class="txn-meta">${dateStr} · ${CAT_NAMES[e.category]||e.category}</div>
+      </div>
+      <div class="txn-right">
+        <div class="txn-amount" style="color:${color}">${fmt(e.amount)}</div>
+        <div class="txn-badge" style="background:${color}22;color:${color}">${labels[section]}</div>
+      </div>
+      <button class="btn-del" onclick="deleteExpense('${section}',${e.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// LISTA
+function addListItem() {
+  const desc = document.getElementById('desc-lista').value.trim();
+  const qty = document.getElementById('qty-lista').value.trim();
+  const who = document.getElementById('who-lista').value;
+  if (!desc) { const el=document.getElementById('desc-lista'); el.style.borderColor='#fa6c9a'; setTimeout(()=>el.style.borderColor='',1500); return; }
+  const newL = { id: Date.now(), desc, qty, who, done: false };
+  listaItems.unshift(newL);
+  renderLista();
+  document.getElementById('desc-lista').value = '';
+  document.getElementById('qty-lista').value = '';
+  sb.from('lista_cumparaturi').insert([{ id:newL.id, descriere:desc, cantitate:qty, cine:who, done:false }])
+    .then(({error}) => { if(error) console.error(error); });
+}
+
+function toggleListItem(id) {
+  listaItems = listaItems.map(i => i.id===id ? {...i, done:!i.done} : i);
+  renderLista();
+  const u = listaItems.find(i=>i.id===id);
+  sb.from('lista_cumparaturi').update({done:u.done}).eq('id',id).then(({error})=>{if(error)console.error(error);});
+}
+
+function deleteListItem(id) {
+  listaItems = listaItems.filter(i=>i.id!==id);
+  renderLista();
+  sb.from('lista_cumparaturi').delete().eq('id',id).then(({error})=>{if(error)console.error(error);});
+}
+
+function renderLista() {
+  const active = listaItems.filter(i=>!i.done);
+  const done = listaItems.filter(i=>i.done);
+  const whoNames = { mario:'🧔 Mario', costina:'👩 Costina', oricare:'👥 Oricare' };
+  document.getElementById('lista-count').textContent = active.length ? `(${active.length})` : '';
+  const elA = document.getElementById('lista-items');
+  elA.innerHTML = active.length ? active.map(i=>`
+    <div class="txn-item" style="cursor:pointer" onclick="toggleListItem(${i.id})">
+      <div class="txn-icon">🛒</div>
+      <div class="txn-info"><div class="txn-desc">${i.desc}</div><div class="txn-meta">${i.qty?i.qty+' · ':''}${whoNames[i.who]}</div></div>
+      <div class="txn-right"><div class="txn-badge" style="background:rgba(96,197,250,0.15);color:var(--lista)">De cumpărat</div></div>
+      <button class="btn-del" onclick="event.stopPropagation();deleteListItem(${i.id})">✕</button>
+    </div>`).join('') : '<div class="empty-state">Lista e goală 🛒</div>';
+  const elD = document.getElementById('lista-done');
+  elD.innerHTML = done.length ? done.map(i=>`
+    <div class="txn-item" style="opacity:0.5;cursor:pointer" onclick="toggleListItem(${i.id})">
+      <div class="txn-icon">✅</div>
+      <div class="txn-info"><div class="txn-desc" style="text-decoration:line-through">${i.desc}</div><div class="txn-meta">${i.qty?i.qty+' · ':''}${whoNames[i.who]}</div></div>
+      <button class="btn-del" onclick="event.stopPropagation();deleteListItem(${i.id})">✕</button>
+    </div>`).join('') : '<div class="empty-state">Nimic cumpărat încă</div>';
+}
+
+// PERETU
+function setDirection(dir) {
+  peretuDir = dir;
+  const lbl = document.getElementById('peretu-dir-label');
+  lbl.textContent = dir==='buc-per' ? '→ 📦 Ducem la Peretu' : '→ 🏙️ Aducem din Peretu';
+  lbl.style.color = dir==='buc-per' ? 'var(--peretu)' : '#fa9c6c';
+}
+
+function addPeretuItem() {
+  const desc = document.getElementById('desc-peretu').value.trim();
+  const qty = document.getElementById('qty-peretu').value.trim();
+  const who = document.getElementById('who-peretu').value;
+  if (!desc) { const el=document.getElementById('desc-peretu'); el.style.borderColor='#fa6c9a'; setTimeout(()=>el.style.borderColor='',1500); return; }
+  const newP = { id:Date.now(), desc, qty, who, dir:peretuDir, done:false };
+  peretuItems.unshift(newP);
+  renderPeretu();
+  document.getElementById('desc-peretu').value='';
+  document.getElementById('qty-peretu').value='';
+  sb.from('peretu').insert([{id:newP.id, descriere:desc, cantitate:qty, cine:who, directie:peretuDir, done:false}])
+    .then(({error})=>{if(error)console.error(error);});
+}
+
+function togglePeretuItem(id) {
+  peretuItems = peretuItems.map(i=>i.id===id?{...i,done:!i.done}:i);
+  renderPeretu();
+  const u=peretuItems.find(i=>i.id===id);
+  sb.from('peretu').update({done:u.done}).eq('id',id).then(({error})=>{if(error)console.error(error);});
+}
+
+function deletePeretuItem(id) {
+  peretuItems=peretuItems.filter(i=>i.id!==id);
+  renderPeretu();
+  sb.from('peretu').delete().eq('id',id).then(({error})=>{if(error)console.error(error);});
+}
+
+function renderPeretu() {
+  const whoNames={mario:'🧔 Mario',costina:'👩 Costina',amandoi:'👥 Amândoi'};
+  const bp=peretuItems.filter(i=>i.dir==='buc-per'&&!i.done);
+  const pb=peretuItems.filter(i=>i.dir==='per-buc'&&!i.done);
+  const done=peretuItems.filter(i=>i.done);
+  document.getElementById('count-buc-per').textContent=bp.length?`(${bp.length})`:'';
+  document.getElementById('count-per-buc').textContent=pb.length?`(${pb.length})`:'';
+  function rList(items,elId,color,label) {
+    const el=document.getElementById(elId);
+    el.innerHTML=items.length?items.map(i=>`
+      <div class="txn-item" style="cursor:pointer" onclick="togglePeretuItem(${i.id})">
+        <div class="txn-icon">${i.dir==='buc-per'?'📦':'🏙️'}</div>
+        <div class="txn-info"><div class="txn-desc">${i.desc}</div><div class="txn-meta">${i.qty?i.qty+' · ':''}${whoNames[i.who]}</div></div>
+        <div class="txn-right"><div class="txn-badge" style="background:${color}22;color:${color}">${label}</div></div>
+        <button class="btn-del" onclick="event.stopPropagation();deletePeretuItem(${i.id})">✕</button>
+      </div>`).join(''):`<div class="empty-state">${elId==='peretu-buc-per'?'Nimic de dus 🏡':'Nimic de adus 🏙️'}</div>`;
+  }
+  rList(bp,'peretu-buc-per','var(--peretu)','De dus');
+  rList(pb,'peretu-per-buc','#fa9c6c','De adus');
+  const elD=document.getElementById('peretu-done');
+  elD.innerHTML=done.length?done.map(i=>`
+    <div class="txn-item" style="opacity:0.5;cursor:pointer" onclick="togglePeretuItem(${i.id})">
+      <div class="txn-icon">✅</div>
+      <div class="txn-info"><div class="txn-desc" style="text-decoration:line-through">${i.desc}</div><div class="txn-meta">${i.qty?i.qty+' · ':''}${whoNames[i.who]} · ${i.dir==='buc-per'?'Buc→Per':'Per→Buc'}</div></div>
+      <button class="btn-del" onclick="event.stopPropagation();deletePeretuItem(${i.id})">✕</button>
+    </div>`).join(''):'<div class="empty-state">Nimic transportat încă</div>';
+}
+
+// SAPTAMANI
+async function confirmCloseWeek() {
+  if (!confirm('Ești sigur că vrei să închizi săptămâna? Datele vor fi arhivate.')) return;
+  const start=getWeekStart(), end=getWeekEnd();
+  const tM=data.mario.reduce((a,e)=>a+(parseFloat(e.amount)||0),0);
+  const tC=data.costina.reduce((a,e)=>a+(parseFloat(e.amount)||0),0);
+  const tT=data.together.reduce((a,e)=>a+(parseFloat(e.amount)||0),0);
+  const {error}=await sb.from('saptamani').insert([{
+    id:Date.now(), data_start:fmtDate(start), data_sfarsit:fmtDate(end),
+    mario:JSON.stringify(data.mario), costina:JSON.stringify(data.costina), together:JSON.stringify(data.together),
+    total_mario:tM, total_costina:tC, total_together:tT
+  }]);
+  if (error) { alert('Eroare: '+error.message); return; }
+  await sb.from('cheltuieli').delete().neq('id',0);
+  data={mario:[],costina:[],together:[]};
+  ['mario','costina','together'].forEach(s=>renderSection(s));
+  renderTabTotals();
+  loadIstoricData();
+  alert('✅ Săptămâna arhivată! Săptămână nouă începută.');
+}
+
+let weekChart=null;
+function renderChart(saptamani) {
+  const card=document.getElementById('chart-card');
+  if (!saptamani.length) { card.style.display='none'; return; }
+  card.style.display='block';
+  const labels=saptamani.map(s=>s.data_start.split(' ').slice(0,2).join(' ')).reverse();
+  const mD=saptamani.map(s=>parseFloat(s.total_mario)||0).reverse();
+  const cD=saptamani.map(s=>parseFloat(s.total_costina)||0).reverse();
+  const tD=saptamani.map(s=>parseFloat(s.total_together)||0).reverse();
+  if (weekChart) weekChart.destroy();
+  weekChart=new Chart(document.getElementById('weeklyChart').getContext('2d'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Mario',data:mD,backgroundColor:'rgba(108,240,194,0.8)',borderRadius:5,borderSkipped:false},
+      {label:'Costina',data:cD,backgroundColor:'rgba(250,108,154,0.8)',borderRadius:5,borderSkipped:false},
+      {label:'Împreună',data:tD,backgroundColor:'rgba(250,204,108,0.8)',borderRadius:5,borderSkipped:false},
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.parsed.y.toFixed(2).replace('.',',')+' lei'}}},
+      scales:{
+        x:{grid:{color:'rgba(46,46,58,0.8)'},ticks:{color:'#7a7a90',font:{size:10}}},
+        y:{grid:{color:'rgba(46,46,58,0.8)'},ticks:{color:'#7a7a90',font:{size:10},callback:v=>v+' lei'}}
+      }
+    }
+  });
+}
+
+function renderIstoric(saptamani) {
+  renderChart(saptamani);
+  const el=document.getElementById('istoric-list');
+  if (!saptamani.length) { el.innerHTML='<div class="empty-state">Nu există săptămâni arhivate încă</div>'; return; }
+  el.innerHTML=saptamani.map((s,idx)=>{
+    const mario=typeof s.mario==='string'?JSON.parse(s.mario):(s.mario||[]);
+    const costina=typeof s.costina==='string'?JSON.parse(s.costina):(s.costina||[]);
+    const together=typeof s.together==='string'?JSON.parse(s.together):(s.together||[]);
+    const total=(parseFloat(s.total_mario)||0)+(parseFloat(s.total_costina)||0)+(parseFloat(s.total_together)||0);
+    return `<div class="sap-card">
+      <div class="sap-header" onclick="toggleSap(${idx})">
+        <div>
+          <div class="sap-dates">📅 ${s.data_start} → ${s.data_sfarsit}</div>
+          <div class="sap-totals">
+            <div class="sap-total-item">🧔 <span style="color:var(--mario)">${fmt(s.total_mario)}</span></div>
+            <div class="sap-total-item">👩 <span style="color:var(--costina)">${fmt(s.total_costina)}</span></div>
+            <div class="sap-total-item">🏠 <span style="color:var(--together)">${fmt(s.total_together)}</span></div>
+            <div class="sap-total-item">💰 <span style="color:var(--istoric);font-weight:700">${fmt(total)}</span></div>
+          </div>
+        </div>
+        <div class="sap-arrow" id="sap-arrow-${idx}">›</div>
+      </div>
+      <div class="sap-detail" id="sap-detail-${idx}">
+        ${renderSapSection(mario,'Mario','var(--mario)')}
+        ${renderSapSection(costina,'Costina','var(--costina)')}
+        ${renderSapSection(together,'Împreună','var(--together)')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSap(idx) {
+  const el=document.getElementById('sap-detail-'+idx);
+  const arrow=document.getElementById('sap-arrow-'+idx);
+  const open=el.classList.toggle('open');
+  arrow.style.transform=open?'rotate(90deg)':'';
+}
+
+function renderSapSection(items,name,color) {
+  if (!items.length) return '';
+  return `<div style="margin-top:10px;">
+    <div style="font-size:11px;font-weight:700;color:${color};margin-bottom:6px;">${name}</div>
+    ${items.map(e=>`<div class="txn-item" style="margin-bottom:4px;">
+      <div class="txn-icon">${(CAT_META[e.category||e.categorie]||{icon:'📦'}).icon}</div>
+      <div class="txn-info"><div class="txn-desc">${e.desc||e.descriere||''}</div><div class="txn-meta">${e.date||e.data||''}</div></div>
+      <div class="txn-amount" style="color:${color}">${fmt(e.amount||e.suma)}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+async function loadIstoricData() {
+  const {data:sapData}=await sb.from('saptamani').select('*').order('id',{ascending:false});
+  renderIstoric(sapData||[]);
+  const el=document.getElementById('tab-total-istoric');
+  if (el) el.textContent=sapData&&sapData.length?sapData.length+' săpt.':'';
+}
+
+// LOAD ALL
+async function loadAll() {
+  document.getElementById('loading-overlay').style.display='flex';
+  try {
+    const {data:chData}=await sb.from('cheltuieli').select('*').order('id',{ascending:false});
+    if (chData) {
+      data={mario:[],costina:[],together:[]};
+      chData.forEach(r=>{
+        const item={id:r.id,desc:r.descriere||'',amount:parseFloat(r.suma)||0,category:r.categorie||'otros',date:r.data||''};
+        if (r.sectiune&&data[r.sectiune]) data[r.sectiune].push(item);
+      });
+    }
+    const {data:lData}=await sb.from('lista_cumparaturi').select('*').order('id',{ascending:false});
+    if (lData) listaItems=lData.map(r=>({id:r.id,desc:r.descriere||'',qty:r.cantitate||'',who:r.cine||'oricare',done:r.done||false}));
+    const {data:pData}=await sb.from('peretu').select('*').order('id',{ascending:false});
+    if (pData) peretuItems=pData.map(r=>({id:r.id,desc:r.descriere||'',qty:r.cantitate||'',who:r.cine||'amandoi',dir:r.directie||'buc-per',done:r.done||false}));
+  } catch(e) { console.error(e); }
+
+  ['mario','costina','together'].forEach(s=>renderSection(s));
+  renderTabTotals();
+  renderLista();
+  renderPeretu();
+  await loadIstoricData();
+  updateWeekBanner();
+  document.getElementById('loading-overlay').style.display='none';
+}
+
+// PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(e=>console.log('SW:',e));
+}
+
+loadAll();
 </script>
 </body>
 </html>
