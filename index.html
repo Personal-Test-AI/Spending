@@ -704,7 +704,13 @@ function addListItem() {
   document.getElementById('desc-lista').value = '';
   document.getElementById('qty-lista').value = '';
   sb.from('lista_cumparaturi').insert([{ id:newL.id, descriere:desc, cantitate:qty, cine:who, done:false }])
-    .then(({error}) => { if(error) console.error(error); });
+    .then(({error}) => {
+      if(error) console.error(error);
+      else {
+        const whoLabel = who === 'mario' ? '🧔 Mario' : who === 'costina' ? '👩 Costina' : '👥';
+        sendNotification('🛒 Listă nouă!', whoLabel + ' a adăugat: ' + desc + (qty ? ' (' + qty + ')' : ''));
+      }
+    });
 }
 
 function toggleListItem(id) {
@@ -909,6 +915,31 @@ async function loadIstoricData() {
   renderIstoric(sapData||[]);
   const el=document.getElementById('tab-total-istoric');
   if (el) el.textContent=sapData&&sapData.length?sapData.length+' săpt.':'';
+}
+
+
+// ── NOTIFICĂRI ONESIGNAL ──
+async function sendNotification(title, message) {
+  try {
+    const response = await fetch('https://onesignal.com/api/v1/notifications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic os_v2_app_7ppkhzyworasplyjl24ae4uyqmpe4gangpwu77uhhsdtqd7y4ru6yjsz5j6huooj3wr4qoefxd546ndjcbsqxrkcfdxz6dxeksew7lq'
+      },
+      body: JSON.stringify({
+        app_id: 'fbdea3e7-1674-4127-af09-5eb802729883',
+        included_segments: ['All'],
+        headings: { ro: title, en: title },
+        contents: { ro: message, en: message },
+        url: 'https://personal-test-ai.github.io/Spending/'
+      })
+    });
+    const data = await response.json();
+    console.log('Notificare trimisă:', data);
+  } catch(e) {
+    console.error('Eroare notificare:', e);
+  }
 }
 
 // LOAD ALL
