@@ -243,6 +243,77 @@ canvas { display: block; }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid .full { grid-column: 1; }
 }
+
+  /* ── LOGIN SCREEN ── */
+  #login-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding: 40px 24px;
+  }
+
+  .login-title {
+    text-align: center;
+  }
+
+  .login-title h1 {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, var(--mario), var(--costina), var(--together));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .login-title p {
+    color: var(--muted);
+    font-size: 15px;
+    margin-top: 8px;
+  }
+
+  .login-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .login-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    border: none;
+    border-radius: 18px;
+    padding: 20px 24px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    transition: transform 0.15s, opacity 0.15s;
+    color: #0a0a0d;
+  }
+
+  .login-btn:active { transform: scale(0.96); opacity: 0.85; }
+
+  .login-btn-mario {
+    background: linear-gradient(135deg, var(--mario), #4dd9a8);
+  }
+
+  .login-btn-costina {
+    background: linear-gradient(135deg, var(--costina), #f04080);
+  }
+
+  .login-btn .login-emoji { font-size: 32px; }
+
 </style>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
@@ -270,6 +341,24 @@ canvas { display: block; }
 </script>
 </head>
 <body>
+
+
+<div id="login-screen">
+  <div class="login-title">
+    <h1>🏠 Spendings</h1>
+    <p>Cine ești tu?</p>
+  </div>
+  <div class="login-btns">
+    <button class="login-btn login-btn-mario" onclick="selectUser('mario')">
+      <span class="login-emoji">🧔</span>
+      <span>Mario</span>
+    </button>
+    <button class="login-btn login-btn-costina" onclick="selectUser('costina')">
+      <span class="login-emoji">👩</span>
+      <span>Costina</span>
+    </button>
+  </div>
+</div>
 
 <div id="loading-overlay">
   <div class="spinner"></div>
@@ -496,6 +585,18 @@ canvas { display: block; }
 </div>
 
 <script>
+
+// ── LOGIN ──
+let currentUser = null;
+
+function selectUser(user) {
+  currentUser = user;
+  document.getElementById('login-screen').style.display = 'none';
+  // Switch to that user's tab automatically
+  switchTab(user);
+  loadAll();
+}
+
 const SB_URL = 'https://lkzqjvoxmjajtrrwneuw.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxrenFqdm94bWphanRycnduZXV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjY5MTUsImV4cCI6MjA4OTQwMjkxNX0.B5vywaZqBByQWD6sC6Lfms8e0qpkdWM4ueFLruDlwc0';
 const sb = supabase.createClient(SB_URL, SB_KEY);
@@ -974,7 +1075,7 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(e=>console.log('SW:',e));
 }
 
-loadAll();
+// loadAll called after login
 </script>
 </body>
 </html>
